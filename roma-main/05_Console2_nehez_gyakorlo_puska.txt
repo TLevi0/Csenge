@@ -1,0 +1,1238 @@
+CONSOLE 2 – NEHEZEBB GYAKORLÓ PUSKA
+Vizsga előtti ismétlő. Nem rejtett vizsgás használatra.
+Téma: több soros adatok, blokkonkénti beolvasás, nehezebb LINQ, csoportosítás, dátum/idő, több fájl összekapcsolása.
+
+============================================================
+0) MIKOR KELL EZ?
+============================================================
+
+Akkor hasznos, ha a feladat már nem csak ilyen:
+
+nev;ev;darab
+
+hanem például:
+
+1. rekord:
+Név
+2024
+15
+típus
+
+vagy:
+
+ID: 12
+Név: Alma
+Év: 2024
+Darab: 35
+
+vagy:
+
+rekordok üres sorral elválasztva
+
+vagy több fájl van:
+termekek.txt
+eladasok.txt
+
+és ezekből kell összekapcsolni, csoportosítani, maximumot keresni.
+
+============================================================
+1) TÖBB SOR = EGY ADAT
+============================================================
+
+FÁJL:
+Alma
+2024
+35
+gyümölcs
+Körte
+2023
+20
+gyümölcs
+
+OSZTÁLY:
+
+public class Termek
+{
+    public string Nev { get; set; }
+    public int Ev { get; set; }
+    public int Darab { get; set; }
+    public string Tipus { get; set; }
+
+    public Termek(string nev, int ev, int darab, string tipus)
+    {
+        Nev = nev;
+        Ev = ev;
+        Darab = darab;
+        Tipus = tipus;
+    }
+}
+
+BEOLVASÁS:
+
+static List<Termek> Termekek = new List<Termek>();
+
+static void BeolvasasTobbSoros()
+{
+    string[] sorok = File.ReadAllLines("adatok.txt");
+
+    for (int i = 0; i < sorok.Length; i += 4)
+    {
+        string nev = sorok[i];
+        int ev = int.Parse(sorok[i + 1]);
+        int darab = int.Parse(sorok[i + 2]);
+        string tipus = sorok[i + 3];
+
+        Termekek.Add(new Termek(nev, ev, darab, tipus));
+    }
+}
+
+LÉNYEG:
+i += 4, mert egy rekord 4 sorból áll.
+
+============================================================
+2) TÖBB SOR = EGY ADAT, DE VAN ÜRES SOR IS
+============================================================
+
+FÁJL:
+Alma
+2024
+35
+gyümölcs
+
+Körte
+2023
+20
+gyümölcs
+
+BEOLVASÁS:
+
+static void BeolvasasUresSorokkal()
+{
+    string[] sorok = File.ReadAllLines("adatok.txt")
+                         .Where(x => x.Trim() != "")
+                         .ToArray();
+
+    for (int i = 0; i < sorok.Length; i += 4)
+    {
+        Termekek.Add(new Termek(
+            sorok[i],
+            int.Parse(sorok[i + 1]),
+            int.Parse(sorok[i + 2]),
+            sorok[i + 3]
+        ));
+    }
+}
+
+LÉNYEG:
+.Where(x => x.Trim() != "")
+kiszed minden üres sort.
+
+============================================================
+3) BLOKKOS ADATOK – ID: 12 FORMÁTUM
+============================================================
+
+FÁJL:
+ID: 1
+Név: Alma
+Év: 2024
+Darab: 35
+Típus: gyümölcs
+
+ID: 2
+Név: Körte
+Év: 2023
+Darab: 20
+Típus: gyümölcs
+
+OSZTÁLY:
+
+public class Termek2
+{
+    public int Id { get; set; }
+    public string Nev { get; set; }
+    public int Ev { get; set; }
+    public int Darab { get; set; }
+    public string Tipus { get; set; }
+}
+
+BEOLVASÁS:
+
+static List<Termek2> Termekek2 = new List<Termek2>();
+
+static void BeolvasasBlokkokkal()
+{
+    string[] sorok = File.ReadAllLines("adatok.txt")
+                         .Where(x => x.Trim() != "")
+                         .ToArray();
+
+    for (int i = 0; i < sorok.Length; i += 5)
+    {
+        Termek2 t = new Termek2();
+
+        t.Id = int.Parse(sorok[i].Split(": ")[1]);
+        t.Nev = sorok[i + 1].Split(": ")[1];
+        t.Ev = int.Parse(sorok[i + 2].Split(": ")[1]);
+        t.Darab = int.Parse(sorok[i + 3].Split(": ")[1]);
+        t.Tipus = sorok[i + 4].Split(": ")[1];
+
+        Termekek2.Add(t);
+    }
+}
+
+LÉNYEG:
+"ID: 1".Split(": ")[1] -> "1"
+
+============================================================
+4) BLOKKOK ÜRES SORRAL ELVÁLASZTVA – FEJLETTEBB
+============================================================
+
+FÁJL:
+ID: 1
+Név: Alma
+Év: 2024
+Darab: 35
+
+ID: 2
+Név: Körte
+Év: 2023
+Darab: 20
+
+BEOLVASÁS:
+
+static void BeolvasasBlokkLista()
+{
+    string teljes = File.ReadAllText("adatok.txt");
+
+    string[] blokkok = teljes.Split(
+        new string[] { "\r\n\r\n", "\n\n" },
+        StringSplitOptions.RemoveEmptyEntries
+    );
+
+    foreach (string blokk in blokkok)
+    {
+        string[] sorok = blokk.Split(
+            new string[] { "\r\n", "\n" },
+            StringSplitOptions.RemoveEmptyEntries
+        );
+
+        Termek2 t = new Termek2();
+
+        t.Id = int.Parse(sorok[0].Split(": ")[1]);
+        t.Nev = sorok[1].Split(": ")[1];
+        t.Ev = int.Parse(sorok[2].Split(": ")[1]);
+        t.Darab = int.Parse(sorok[3].Split(": ")[1]);
+
+        Termekek2.Add(t);
+    }
+}
+
+LÉNYEG:
+Először blokkokra bontasz, utána sorokra.
+
+============================================================
+5) TÖBB FÁJL ÖSSZEKAPCSOLÁSA LINQ JOIN-NAL
+============================================================
+
+termekek.txt:
+1;Alma;gyümölcs
+2;Kenyér;pékáru
+3;Tej;ital
+
+eladasok.txt:
+1;2024;35
+1;2025;40
+2;2024;12
+
+OSZTÁLYOK:
+
+public class TermekAlap
+{
+    public int Id { get; set; }
+    public string Nev { get; set; }
+    public string Tipus { get; set; }
+
+    public TermekAlap(string sor)
+    {
+        string[] t = sor.Split(';');
+
+        Id = int.Parse(t[0]);
+        Nev = t[1];
+        Tipus = t[2];
+    }
+}
+
+public class Eladas
+{
+    public int TermekId { get; set; }
+    public int Ev { get; set; }
+    public int Darab { get; set; }
+
+    public Eladas(string sor)
+    {
+        string[] t = sor.Split(';');
+
+        TermekId = int.Parse(t[0]);
+        Ev = int.Parse(t[1]);
+        Darab = int.Parse(t[2]);
+    }
+}
+
+BEOLVASÁS:
+
+static List<TermekAlap> TermekAlapok = new List<TermekAlap>();
+static List<Eladas> Eladasok = new List<Eladas>();
+
+static void BeolvasasTobbFajl()
+{
+    TermekAlapok = File.ReadAllLines("termekek.txt")
+                       .Skip(1)
+                       .Select(x => new TermekAlap(x))
+                       .ToList();
+
+    Eladasok = File.ReadAllLines("eladasok.txt")
+                   .Skip(1)
+                   .Select(x => new Eladas(x))
+                   .ToList();
+}
+
+JOIN LEKÉRDEZÉS:
+
+static void JoinPelda()
+{
+    var eredmeny = Eladasok
+        .Join(
+            TermekAlapok,
+            eladas => eladas.TermekId,
+            termek => termek.Id,
+            (eladas, termek) => new
+            {
+                termek.Nev,
+                termek.Tipus,
+                eladas.Ev,
+                eladas.Darab
+            }
+        )
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Nev} {x.Tipus} {x.Ev} {x.Darab}");
+    }
+}
+
+LÉNYEG:
+Join akkor kell, ha egyik fájlban csak ID van, másik fájlban a név.
+
+============================================================
+6) GROUP BY – TÍPUSONKÉNT ÖSSZEG
+============================================================
+
+static void TipusonkentOsszeg()
+{
+    var eredmeny = Termekek
+        .GroupBy(x => x.Tipus)
+        .Select(g => new
+        {
+            Tipus = g.Key,
+            Osszeg = g.Sum(x => x.Darab),
+            Darab = g.Count(),
+            Atlag = g.Average(x => x.Darab)
+        })
+        .OrderByDescending(x => x.Osszeg)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Tipus}: {x.Osszeg} összesen, {x.Darab} db, átlag: {Math.Round(x.Atlag, 1)}");
+    }
+}
+
+LÉNYEG:
+g.Key = csoport neve
+g.Sum(...) = csoporton belüli összeg
+
+============================================================
+7) GROUP BY – ÉVENKÉNTI STATISZTIKA
+============================================================
+
+static void EvenkentiStatisztika()
+{
+    var eredmeny = Termekek
+        .GroupBy(x => x.Ev)
+        .Select(g => new
+        {
+            Ev = g.Key,
+            Db = g.Count(),
+            Osszeg = g.Sum(x => x.Darab),
+            Max = g.Max(x => x.Darab),
+            Min = g.Min(x => x.Darab)
+        })
+        .OrderBy(x => x.Ev)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Ev}: {x.Db} db, összeg: {x.Osszeg}, max: {x.Max}, min: {x.Min}");
+    }
+}
+
+============================================================
+8) GROUP BY – ÉV + TÍPUS SZERINT
+============================================================
+
+static void EvTipusSzerint()
+{
+    var eredmeny = Termekek
+        .GroupBy(x => new { x.Ev, x.Tipus })
+        .Select(g => new
+        {
+            Ev = g.Key.Ev,
+            Tipus = g.Key.Tipus,
+            Osszeg = g.Sum(x => x.Darab),
+            Db = g.Count()
+        })
+        .OrderBy(x => x.Ev)
+        .ThenBy(x => x.Tipus)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Ev} - {x.Tipus}: {x.Osszeg} összesen, {x.Db} db");
+    }
+}
+
+LÉNYEG:
+.GroupBy(x => new { x.Ev, x.Tipus })
+több mező alapján csoportosít.
+
+============================================================
+9) MAXIMUM CSOPORTONKÉNT
+============================================================
+
+static void LegnagyobbTipusonkent()
+{
+    var eredmeny = Termekek
+        .GroupBy(x => x.Tipus)
+        .Select(g => g.OrderByDescending(x => x.Darab).First())
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Tipus}: {x.Nev} - {x.Darab}");
+    }
+}
+
+Ha van MaxBy:
+
+var eredmeny = Termekek
+    .GroupBy(x => x.Tipus)
+    .Select(g => g.MaxBy(x => x.Darab))
+    .ToList();
+
+============================================================
+10) LEGTÖBB ELADÁS TERMÉKENKÉNT TÖBB FÁJLBÓL
+============================================================
+
+static void LegtobbEladasTermekenkent()
+{
+    var eredmeny = Eladasok
+        .GroupBy(x => x.TermekId)
+        .Select(g => new
+        {
+            TermekId = g.Key,
+            Osszeg = g.Sum(x => x.Darab)
+        })
+        .Join(
+            TermekAlapok,
+            e => e.TermekId,
+            t => t.Id,
+            (e, t) => new
+            {
+                t.Nev,
+                t.Tipus,
+                e.Osszeg
+            }
+        )
+        .OrderByDescending(x => x.Osszeg)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Nev} ({x.Tipus}) - {x.Osszeg}");
+    }
+}
+
+============================================================
+11) DISTINCT – EGYEDI ÉRTÉKEK
+============================================================
+
+static void EgyediTipusok()
+{
+    var tipusok = Termekek
+        .Select(x => x.Tipus)
+        .Distinct()
+        .OrderBy(x => x)
+        .ToList();
+
+    foreach (string tipus in tipusok)
+    {
+        Console.WriteLine(tipus);
+    }
+}
+
+============================================================
+12) ANY / ALL
+============================================================
+
+static void AnyAllPelda()
+{
+    bool van2024 = Termekek.Any(x => x.Ev == 2024);
+
+    bool mindenDarabPozitiv = Termekek.All(x => x.Darab > 0);
+
+    bool vanNagy = Termekek.Any(x => x.Darab > 100);
+
+    Console.WriteLine($"Van 2024-es adat: {van2024}");
+    Console.WriteLine($"Minden darab pozitív: {mindenDarabPozitiv}");
+    Console.WriteLine($"Van 100 feletti darab: {vanNagy}");
+}
+
+LÉNYEG:
+Any = van-e legalább egy
+All = mindegyikre igaz-e
+
+============================================================
+13) WHERE + ORDERBY + SELECT KOMBINÁLVA
+============================================================
+
+static void OsszetettLekerdezes()
+{
+    var eredmeny = Termekek
+        .Where(x => x.Ev >= 2020 && x.Ev <= 2024)
+        .Where(x => x.Darab >= 10)
+        .OrderBy(x => x.Tipus)
+        .ThenByDescending(x => x.Darab)
+        .Select(x => new
+        {
+            Szoveg = $"{x.Nev} ({x.Tipus})",
+            x.Ev,
+            x.Darab
+        })
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Szoveg} - {x.Ev} - {x.Darab}");
+    }
+}
+
+============================================================
+14) TOP 3 EREDMÉNY
+============================================================
+
+static void Top3()
+{
+    var top3 = Termekek
+        .OrderByDescending(x => x.Darab)
+        .Take(3)
+        .ToList();
+
+    foreach (var x in top3)
+    {
+        Console.WriteLine($"{x.Nev} - {x.Darab}");
+    }
+}
+
+Utolsó 5:
+.TakeLast(5)
+
+Kihagy első 2:
+.Skip(2)
+
+============================================================
+15) DÁTUM BEOLVASÁSA ÉS RENDEZÉSE
+============================================================
+
+FÁJL:
+Alma;2024-05-18;35
+
+OSZTÁLY:
+
+public class Naplo
+{
+    public string Nev { get; set; }
+    public DateTime Datum { get; set; }
+    public int Darab { get; set; }
+
+    public Naplo(string sor)
+    {
+        string[] t = sor.Split(';');
+
+        Nev = t[0];
+        Datum = DateTime.Parse(t[1]);
+        Darab = int.Parse(t[2]);
+    }
+}
+
+LEKÉRDEZÉS:
+
+static List<Naplo> Naplok = new List<Naplo>();
+
+static void DatumosLekerdezes()
+{
+    var eredmeny = Naplok
+        .Where(x => x.Datum.Year == 2024)
+        .OrderBy(x => x.Datum)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Datum:yyyy.MM.dd} {x.Nev} {x.Darab}");
+    }
+}
+
+============================================================
+16) KÉT DÁTUM KÖZÖTT
+============================================================
+
+static void KetDatumKozott()
+{
+    DateTime tol = new DateTime(2024, 1, 1);
+    DateTime ig = new DateTime(2024, 12, 31);
+
+    var eredmeny = Naplok
+        .Where(x => x.Datum >= tol && x.Datum <= ig)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Datum:yyyy-MM-dd} {x.Nev}");
+    }
+}
+
+============================================================
+17) IDŐPONTOK – HH:MM ÁTVÁLTÁS TIMESPAN-NAL
+============================================================
+
+FÁJL:
+A001;07:45;14:20
+
+OSZTÁLY:
+
+public class Belepes
+{
+    public string Kod { get; set; }
+    public TimeSpan Be { get; set; }
+    public TimeSpan Ki { get; set; }
+
+    public Belepes(string sor)
+    {
+        string[] t = sor.Split(';');
+
+        Kod = t[0];
+        Be = TimeSpan.Parse(t[1]);
+        Ki = TimeSpan.Parse(t[2]);
+    }
+
+    public int BentToltottPerc
+    {
+        get { return (int)(Ki - Be).TotalMinutes; }
+    }
+}
+
+LEKÉRDEZÉS:
+
+static List<Belepes> Belepesek = new List<Belepes>();
+
+static void BentToltottIdo()
+{
+    var eredmeny = Belepesek
+        .OrderByDescending(x => x.BentToltottPerc)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Kod}: {x.BentToltottPerc} perc");
+    }
+}
+
+============================================================
+18) INTERVALLUM ÁTFEDÉS
+============================================================
+
+Kérdés:
+Kik voltak bent 10:00 és 11:00 között?
+
+static void IntervallumAtfedes()
+{
+    TimeSpan keresettKezd = TimeSpan.Parse("10:00");
+    TimeSpan keresettVeg = TimeSpan.Parse("11:00");
+
+    var eredmeny = Belepesek
+        .Where(x => x.Be < keresettVeg && x.Ki > keresettKezd)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Kod}: {x.Be}-{x.Ki}");
+    }
+}
+
+LÉNYEG:
+Átfedés akkor van, ha:
+kezdés < másik vége ÉS végzés > másik kezdete
+
+============================================================
+19) ELSŐ ÉS UTOLSÓ ESEMÉNY CSOPORTONKÉNT
+============================================================
+
+FÁJL:
+A001;07:45;belépés
+A001;14:20;kilépés
+B002;08:10;belépés
+B002;13:55;kilépés
+
+OSZTÁLY:
+
+public class Esemeny
+{
+    public string Kod { get; set; }
+    public TimeSpan Ido { get; set; }
+    public string Tipus { get; set; }
+
+    public Esemeny(string sor)
+    {
+        string[] t = sor.Split(';');
+
+        Kod = t[0];
+        Ido = TimeSpan.Parse(t[1]);
+        Tipus = t[2];
+    }
+}
+
+LEKÉRDEZÉS:
+
+static List<Esemeny> Esemenyek = new List<Esemeny>();
+
+static void ElsoUtolsoEsemeny()
+{
+    var eredmeny = Esemenyek
+        .GroupBy(x => x.Kod)
+        .Select(g => new
+        {
+            Kod = g.Key,
+            Elso = g.OrderBy(x => x.Ido).First(),
+            Utolso = g.OrderByDescending(x => x.Ido).First()
+        })
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Kod}: első {x.Elso.Ido} {x.Elso.Tipus}, utolsó {x.Utolso.Ido} {x.Utolso.Tipus}");
+    }
+}
+
+============================================================
+20) HIÁNYZÓ PÁROK KERESÉSE
+============================================================
+
+Kérdés:
+Kinek nincs kilépése?
+
+static void HianyzoKilepes()
+{
+    var eredmeny = Esemenyek
+        .GroupBy(x => x.Kod)
+        .Where(g => !g.Any(x => x.Tipus == "kilépés"))
+        .Select(g => g.Key)
+        .ToList();
+
+    foreach (string kod in eredmeny)
+    {
+        Console.WriteLine($"{kod} nem lépett ki.");
+    }
+}
+
+Kinek van belépése és kilépése is?
+
+var jok = Esemenyek
+    .GroupBy(x => x.Kod)
+    .Where(g => g.Any(x => x.Tipus == "belépés") && g.Any(x => x.Tipus == "kilépés"))
+    .Select(g => g.Key)
+    .ToList();
+
+============================================================
+21) DICTIONARY – GYORS KERESÉS ID ALAPJÁN
+============================================================
+
+static void DictionaryPelda()
+{
+    Dictionary<int, TermekAlap> termekSzotar = TermekAlapok
+        .ToDictionary(x => x.Id, x => x);
+
+    foreach (var eladas in Eladasok)
+    {
+        TermekAlap termek = termekSzotar[eladas.TermekId];
+
+        Console.WriteLine($"{termek.Nev}: {eladas.Ev} - {eladas.Darab}");
+    }
+}
+
+LÉNYEG:
+Dictionary akkor jó, ha ID alapján sokszor kell kikeresni valamit.
+
+============================================================
+22) TÖBB FELTÉTELŰ MAXIMUM
+============================================================
+
+Kérdés:
+Melyik 2024-es gyümölcsből volt a legtöbb?
+
+static void FeltetelesMaximum()
+{
+    var legnagyobb = Termekek
+        .Where(x => x.Ev == 2024 && x.Tipus == "gyümölcs")
+        .OrderByDescending(x => x.Darab)
+        .FirstOrDefault();
+
+    if (legnagyobb == null)
+    {
+        Console.WriteLine("Nincs ilyen adat.");
+    }
+    else
+    {
+        Console.WriteLine($"{legnagyobb.Nev} - {legnagyobb.Darab}");
+    }
+}
+
+============================================================
+23) LISTA ÜRES-E?
+============================================================
+
+static void UresListaVedekezes()
+{
+    var talalatok = Termekek
+        .Where(x => x.Ev == 2099)
+        .ToList();
+
+    if (!talalatok.Any())
+    {
+        Console.WriteLine("Nincs találat.");
+        return;
+    }
+
+    Console.WriteLine($"Találatok száma: {talalatok.Count}");
+}
+
+VAGY:
+if (talalatok.Count == 0)
+
+============================================================
+24) SAFE PARSE – HA ROSSZ ADAT IS LEHET
+============================================================
+
+public class BiztonsagosAdat
+{
+    public string Nev { get; set; }
+    public int Ev { get; set; }
+    public int Darab { get; set; }
+
+    public BiztonsagosAdat(string sor)
+    {
+        string[] t = sor.Split(';');
+
+        Nev = t[0];
+
+        if (!int.TryParse(t[1], out int ev))
+        {
+            ev = 0;
+        }
+
+        if (!int.TryParse(t[2], out int darab))
+        {
+            darab = 0;
+        }
+
+        Ev = ev;
+        Darab = darab;
+    }
+}
+
+============================================================
+25) CSV IDÉZŐJELEKKEL – EGYSZERŰBB MEGOLDÁS
+============================================================
+
+FÁJL:
+1;"Alma, piros";2024
+
+Ha vessző van a szövegben, akkor sima Split(',') szétveri.
+
+Egyszerű vizsgás megoldás, ha pontosan ilyen:
+string sor = "1;Alma, piros;2024";
+string[] t = sor.Split(';');
+
+Ha CSV tényleg idézőjeles és vesszős, azt inkább kerüld, ha nem muszáj.
+Vizsgán általában pontosan megadják az elválasztót.
+
+============================================================
+26) SOROK SZŰRÉSE BEOLVASÁSKOR
+============================================================
+
+static void BeolvasasCsakErvenyesSorok()
+{
+    Termekek = File.ReadAllLines("adatok.txt")
+        .Skip(1)
+        .Where(x => x.Trim() != "")
+        .Where(x => x.Split(';').Length == 4)
+        .Select(x =>
+        {
+            string[] t = x.Split(';');
+
+            return new Termek(
+                t[0],
+                int.Parse(t[1]),
+                int.Parse(t[2]),
+                t[3]
+            );
+        })
+        .ToList();
+}
+
+============================================================
+27) KOMPLEX PÉLDA – TOP TÍPUSOK ÉVENKÉNT
+============================================================
+
+static void TopTipusokEvenkent()
+{
+    var eredmeny = Termekek
+        .GroupBy(x => new { x.Ev, x.Tipus })
+        .Select(g => new
+        {
+            g.Key.Ev,
+            g.Key.Tipus,
+            Osszeg = g.Sum(x => x.Darab)
+        })
+        .GroupBy(x => x.Ev)
+        .Select(g => g.OrderByDescending(x => x.Osszeg).First())
+        .OrderBy(x => x.Ev)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Ev}: {x.Tipus} - {x.Osszeg}");
+    }
+}
+
+LÉNYEG:
+1. először év+típus szerint összegzel
+2. utána évenként kiválasztod a legnagyobbat
+
+============================================================
+28) KOMPLEX PÉLDA – TERMÉK, AMI MINDEN ÉVBEN SZEREPELT
+============================================================
+
+static void MindenEvbenSzerepelt()
+{
+    var evek = Termekek
+        .Select(x => x.Ev)
+        .Distinct()
+        .ToList();
+
+    var eredmeny = Termekek
+        .GroupBy(x => x.Nev)
+        .Where(g => evek.All(ev => g.Any(x => x.Ev == ev)))
+        .Select(g => g.Key)
+        .ToList();
+
+    foreach (string nev in eredmeny)
+    {
+        Console.WriteLine(nev);
+    }
+}
+
+LÉNYEG:
+All + Any együtt:
+minden évre igaz, hogy van olyan rekord.
+
+============================================================
+29) KOMPLEX PÉLDA – NÖVEKEDÉS KÉT ÉV KÖZÖTT
+============================================================
+
+static void NovekedesKetEvKozott()
+{
+    var eredmeny = Termekek
+        .GroupBy(x => x.Nev)
+        .Select(g => new
+        {
+            Nev = g.Key,
+            ElsoEv = g.Where(x => x.Ev == 2023).Sum(x => x.Darab),
+            MasodikEv = g.Where(x => x.Ev == 2024).Sum(x => x.Darab)
+        })
+        .Where(x => x.MasodikEv > x.ElsoEv)
+        .Select(x => new
+        {
+            x.Nev,
+            Novekedes = x.MasodikEv - x.ElsoEv
+        })
+        .OrderByDescending(x => x.Novekedes)
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Nev}: +{x.Novekedes}");
+    }
+}
+
+============================================================
+30) KOMPLEX PÉLDA – HIÁNYZÓ ÉVEK TERMÉKENKÉNT
+============================================================
+
+static void HianyzoEvek()
+{
+    var osszesEv = Termekek
+        .Select(x => x.Ev)
+        .Distinct()
+        .OrderBy(x => x)
+        .ToList();
+
+    var eredmeny = Termekek
+        .GroupBy(x => x.Nev)
+        .Select(g => new
+        {
+            Nev = g.Key,
+            HianyzoEvek = osszesEv
+                .Where(ev => !g.Any(x => x.Ev == ev))
+                .ToList()
+        })
+        .Where(x => x.HianyzoEvek.Any())
+        .ToList();
+
+    foreach (var x in eredmeny)
+    {
+        Console.WriteLine($"{x.Nev}: {string.Join(", ", x.HianyzoEvek)}");
+    }
+}
+
+============================================================
+31) LINQ GYORS SZÓTÁR
+============================================================
+
+Where       = szűrés
+Select      = átalakítás
+OrderBy     = növekvő rendezés
+OrderByDescending = csökkenő rendezés
+ThenBy      = másodlagos rendezés
+GroupBy     = csoportosítás
+Sum         = összeg
+Average     = átlag
+Count       = darabszám
+Min         = minimum érték
+Max         = maximum érték
+First       = első, de hibát dobhat
+FirstOrDefault = első vagy null
+Any         = van-e legalább egy
+All         = mindegyikre igaz-e
+Distinct    = ismétlődések kiszedése
+Take        = első X darab
+Skip        = első X kihagyása
+Join        = két lista összekapcsolása
+ToList      = lekérdezés listává alakítása
+
+============================================================
+32) VIZSGÁS DÖNTÉS – LINQ VAGY FOR?
+============================================================
+
+FOR jobb:
+- ha kezdő vagy és biztosra akarsz menni
+- ha sok köztes változót kell figyelni
+- ha bonyolult a logika
+
+LINQ jobb:
+- csoportosítás
+- rendezés
+- top lista
+- egyedi értékek
+- gyors szűrés
+- több mező szerinti összesítés
+
+============================================================
+33) TIPIKUS NEHÉZ FELADATOK SABLONJAI
+============================================================
+
+1. Melyik évben volt a legtöbb?
+GroupBy év -> Sum -> OrderByDescending -> First
+
+2. Melyik típusból volt a legtöbb?
+GroupBy típus -> Sum -> OrderByDescending -> First
+
+3. Melyik név szerepelt többször?
+GroupBy név -> Where Count > 1
+
+4. Melyik szerepelt minden évben?
+Distinct évek -> GroupBy név -> All évre Any
+
+5. Két fájl összekapcsolása?
+Join ID alapján
+
+6. Első/utolsó időpont?
+GroupBy kód -> OrderBy idő -> First / Last
+
+7. Intervallum átfedés?
+kezd < másikVég && vég > másikKezdés
+
+8. Hiányzó adat?
+GroupBy -> Where !Any
+
+============================================================
+34) MINI TELJES PROGRAM VÁZ NEHÉZ LINQ-HOZ
+============================================================
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace ConsoleNehez
+{
+    internal class Program
+    {
+        static List<Termek> Termekek = new List<Termek>();
+
+        static void Main(string[] args)
+        {
+            Beolvasas();
+
+            TipusonkentOsszeg();
+            EvenkentiStatisztika();
+            EvTipusSzerint();
+            Top3();
+            MindenEvbenSzerepelt();
+
+            Console.ReadKey();
+        }
+
+        static void Beolvasas()
+        {
+            Termekek = File.ReadAllLines("adatok.txt")
+                .Skip(1)
+                .Where(x => x.Trim() != "")
+                .Select(x =>
+                {
+                    string[] t = x.Split(';');
+
+                    return new Termek(
+                        t[0],
+                        int.Parse(t[1]),
+                        int.Parse(t[2]),
+                        t[3]
+                    );
+                })
+                .ToList();
+        }
+
+        static void TipusonkentOsszeg()
+        {
+            var eredmeny = Termekek
+                .GroupBy(x => x.Tipus)
+                .Select(g => new
+                {
+                    Tipus = g.Key,
+                    Osszeg = g.Sum(x => x.Darab)
+                })
+                .OrderByDescending(x => x.Osszeg)
+                .ToList();
+
+            foreach (var x in eredmeny)
+            {
+                Console.WriteLine($"{x.Tipus}: {x.Osszeg}");
+            }
+        }
+
+        static void EvenkentiStatisztika()
+        {
+            var eredmeny = Termekek
+                .GroupBy(x => x.Ev)
+                .Select(g => new
+                {
+                    Ev = g.Key,
+                    Db = g.Count(),
+                    Osszeg = g.Sum(x => x.Darab)
+                })
+                .OrderBy(x => x.Ev)
+                .ToList();
+
+            foreach (var x in eredmeny)
+            {
+                Console.WriteLine($"{x.Ev}: {x.Db} db, {x.Osszeg} összesen");
+            }
+        }
+
+        static void EvTipusSzerint()
+        {
+            var eredmeny = Termekek
+                .GroupBy(x => new { x.Ev, x.Tipus })
+                .Select(g => new
+                {
+                    g.Key.Ev,
+                    g.Key.Tipus,
+                    Osszeg = g.Sum(x => x.Darab)
+                })
+                .OrderBy(x => x.Ev)
+                .ThenBy(x => x.Tipus)
+                .ToList();
+
+            foreach (var x in eredmeny)
+            {
+                Console.WriteLine($"{x.Ev} {x.Tipus}: {x.Osszeg}");
+            }
+        }
+
+        static void Top3()
+        {
+            var top3 = Termekek
+                .OrderByDescending(x => x.Darab)
+                .Take(3)
+                .ToList();
+
+            foreach (var x in top3)
+            {
+                Console.WriteLine($"{x.Nev}: {x.Darab}");
+            }
+        }
+
+        static void MindenEvbenSzerepelt()
+        {
+            var evek = Termekek
+                .Select(x => x.Ev)
+                .Distinct()
+                .ToList();
+
+            var eredmeny = Termekek
+                .GroupBy(x => x.Nev)
+                .Where(g => evek.All(ev => g.Any(x => x.Ev == ev)))
+                .Select(g => g.Key)
+                .ToList();
+
+            foreach (string nev in eredmeny)
+            {
+                Console.WriteLine($"{nev} minden évben szerepelt.");
+            }
+        }
+    }
+
+    public class Termek
+    {
+        public string Nev { get; set; }
+        public int Ev { get; set; }
+        public int Darab { get; set; }
+        public string Tipus { get; set; }
+
+        public Termek(string nev, int ev, int darab, string tipus)
+        {
+            Nev = nev;
+            Ev = ev;
+            Darab = darab;
+            Tipus = tipus;
+        }
+    }
+}

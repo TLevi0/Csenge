@@ -1,0 +1,661 @@
+FRONTEND GYAKORLÓ PUSKA – REACT / AXIOS / BOOTSTRAP
+Vizsga előtti ismétlő. Nem rejtett vizsgás használatra.
+Átírandó nevek: Filmek, UjFilm, EgyFilm, mezőnevek, endpoint URL-ek.
+
+============================================================
+1) TELEPÍTÉS
+============================================================
+
+bun create vite frontend
+cd frontend
+bun install
+bun add axios react-router-dom bootstrap
+
+Indítás:
+bun run dev
+
+============================================================
+2) MAIN.JSX – BOOTSTRAP + ROUTER
+============================================================
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './index.css'
+import App from './App.jsx'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
+)
+
+============================================================
+3) APP.JSX – ROUTES
+============================================================
+
+import { Routes, Route } from 'react-router-dom'
+import Navigation from './Navigation'
+import Home from './Home'
+import Filmek from './Filmek'
+import EgyFilm from './EgyFilm'
+import UjFilm from './UjFilm'
+import ModositFilm from './ModositFilm'
+
+function App() {
+  return (
+    <>
+      <Navigation />
+
+      <div className="container mt-4">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/filmek" element={<Filmek />} />
+          <Route path="/filmek/:id" element={<EgyFilm />} />
+          <Route path="/ujfilm" element={<UjFilm />} />
+          <Route path="/modosit/:id" element={<ModositFilm />} />
+        </Routes>
+      </div>
+    </>
+  )
+}
+
+export default App
+
+============================================================
+4) NAVIGATION.JSX
+============================================================
+
+import { Link } from 'react-router-dom'
+
+function Navigation() {
+  return (
+    <nav className="navbar navbar-expand-lg bg-dark navbar-dark">
+      <div className="container">
+        <Link className="navbar-brand" to="/">Vizsga Frontend</Link>
+
+        <div className="navbar-nav">
+          <Link className="nav-link" to="/">Főoldal</Link>
+          <Link className="nav-link" to="/filmek">Filmek</Link>
+          <Link className="nav-link" to="/ujfilm">Új film</Link>
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+export default Navigation
+
+============================================================
+5) HOME.JSX
+============================================================
+
+import { Link } from 'react-router-dom'
+
+function Home() {
+  return (
+    <div className="text-center p-5 bg-light rounded">
+      <h1>Üdvözlet</h1>
+      <p>Egyszerű React frontend gyakorlás.</p>
+
+      <Link className="btn btn-primary" to="/filmek">
+        Filmek megtekintése
+      </Link>
+    </div>
+  )
+}
+
+export default Home
+
+============================================================
+6) FILMEK.JSX – GET LISTA
+============================================================
+
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import axios from 'axios'
+
+function Filmek() {
+  const [filmek, setFilmek] = useState([])
+
+  useEffect(() => {
+    axios.get('https://localhost:7232/api/films')
+      .then(res => setFilmek(res.data))
+      .catch(err => console.log(err))
+  }, [])
+
+  return (
+    <>
+      <h1>Filmek</h1>
+
+      <div className="row">
+        {filmek.map((film, index) => (
+          <div className="col-md-4 mb-3" key={index}>
+            <div className="card h-100">
+              <div className="card-body">
+                <h5>{film.title}</h5>
+                <p>{film.releaseDate}</p>
+
+                <Link className="btn btn-primary btn-sm" to={`/filmek/${film.id}`}>
+                  Részletek
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
+export default Filmek
+
+FONTOS:
+map-nél kell return, ha kapcsos zárójelet használsz:
+
+{filmek.map((film, index) => {
+  return (
+    <div key={index}>{film.title}</div>
+  )
+})}
+
+VAGY rövidebben:
+{filmek.map((film, index) => (
+  <div key={index}>{film.title}</div>
+))}
+
+============================================================
+7) FILMEK.JSX – GET LISTA + TÖRLÉS
+============================================================
+
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import axios from 'axios'
+
+function Filmek() {
+  const [filmek, setFilmek] = useState([])
+
+  const betoltes = () => {
+    axios.get('https://localhost:7232/api/films')
+      .then(res => setFilmek(res.data))
+      .catch(err => console.log(err))
+  }
+
+  useEffect(() => {
+    betoltes()
+  }, [])
+
+  const torles = (id) => {
+    axios.delete(`https://localhost:7232/api/films/${id}`)
+      .then(() => betoltes())
+      .catch(err => console.log(err))
+  }
+
+  return (
+    <>
+      <h1>Filmek</h1>
+
+      <table className="table table-striped">
+        <thead>
+          <tr>
+            <th>Cím</th>
+            <th>Dátum</th>
+            <th>Művelet</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {filmek.map((film, index) => (
+            <tr key={index}>
+              <td>{film.title}</td>
+              <td>{film.releaseDate}</td>
+              <td>
+                <Link className="btn btn-primary btn-sm me-2" to={`/filmek/${film.id}`}>
+                  Részletek
+                </Link>
+
+                <Link className="btn btn-warning btn-sm me-2" to={`/modosit/${film.id}`}>
+                  Módosítás
+                </Link>
+
+                <button className="btn btn-danger btn-sm" onClick={() => torles(film.id)}>
+                  Törlés
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
+
+export default Filmek
+
+============================================================
+8) EGYFILM.JSX – USEPARAMS + ID ALAPÚ GET
+============================================================
+
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import axios from 'axios'
+
+function EgyFilm() {
+  const { id } = useParams()
+  const [film, setFilm] = useState({})
+
+  useEffect(() => {
+    axios.get(`https://localhost:7232/api/films/${id}`)
+      .then(res => setFilm(res.data))
+      .catch(err => console.log(err))
+  }, [id])
+
+  return (
+    <>
+      <div className="card">
+        <div className="card-body">
+          <h1>{film.title}</h1>
+          <p>Dátum: {film.releaseDate}</p>
+          <p>Színész ID: {film.actorId}</p>
+          <p>Típus ID: {film.filmTypeId}</p>
+
+          <Link className="btn btn-secondary" to="/filmek">
+            Vissza
+          </Link>
+        </div>
+      </div>
+    </>
+  )
+}
+
+export default EgyFilm
+
+============================================================
+9) ÚJFILM.JSX – EGYSZERŰ POST
+============================================================
+
+import { useState } from 'react'
+import axios from 'axios'
+
+function UjFilm() {
+  const [title, setTitle] = useState('')
+  const [releaseDate, setReleaseDate] = useState('')
+  const [actorId, setActorId] = useState('')
+  const [filmTypeId, setFilmTypeId] = useState('')
+
+  const kuldes = (e) => {
+    e.preventDefault()
+
+    const ujFilm = {
+      title: title,
+      releaseDate: releaseDate,
+      actorId: Number(actorId),
+      filmTypeId: Number(filmTypeId)
+    }
+
+    axios.post('https://localhost:7232/api/films', ujFilm)
+      .then(res => console.log(res.data))
+      .catch(err => console.log(err))
+  }
+
+  return (
+    <>
+      <h1>Új film</h1>
+
+      <form onSubmit={kuldes}>
+        <div className="mb-3">
+          <label className="form-label">Cím</label>
+          <input className="form-control" type="text" value={title} onChange={e => setTitle(e.target.value)} />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Megjelenés</label>
+          <input className="form-control" type="date" value={releaseDate} onChange={e => setReleaseDate(e.target.value)} />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Színész ID</label>
+          <input className="form-control" type="number" value={actorId} onChange={e => setActorId(e.target.value)} />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Típus ID</label>
+          <input className="form-control" type="number" value={filmTypeId} onChange={e => setFilmTypeId(e.target.value)} />
+        </div>
+
+        <button className="btn btn-success" type="submit">
+          Feltöltés
+        </button>
+      </form>
+    </>
+  )
+}
+
+export default UjFilm
+
+============================================================
+10) ÚJFILM.JSX – POST + NAVIGATE
+============================================================
+
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
+function UjFilm() {
+  const [title, setTitle] = useState('')
+  const [releaseDate, setReleaseDate] = useState('')
+  const [actorId, setActorId] = useState('')
+  const [filmTypeId, setFilmTypeId] = useState('')
+
+  const navigate = useNavigate()
+
+  const kuldes = (e) => {
+    e.preventDefault()
+
+    const ujFilm = {
+      title,
+      releaseDate,
+      actorId: Number(actorId),
+      filmTypeId: Number(filmTypeId)
+    }
+
+    axios.post('https://localhost:7232/api/films', ujFilm)
+      .then(() => navigate('/filmek'))
+      .catch(err => console.log(err))
+  }
+
+  return (
+    <>
+      <h1>Új film</h1>
+
+      <form onSubmit={kuldes}>
+        <input className="form-control mb-2" placeholder="Cím" value={title} onChange={e => setTitle(e.target.value)} />
+        <input className="form-control mb-2" type="date" value={releaseDate} onChange={e => setReleaseDate(e.target.value)} />
+        <input className="form-control mb-2" type="number" placeholder="Színész ID" value={actorId} onChange={e => setActorId(e.target.value)} />
+        <input className="form-control mb-2" type="number" placeholder="Típus ID" value={filmTypeId} onChange={e => setFilmTypeId(e.target.value)} />
+
+        <button className="btn btn-success" type="submit">
+          Feltöltés
+        </button>
+      </form>
+    </>
+  )
+}
+
+export default UjFilm
+
+============================================================
+11) MÓDOSÍTÁS – GET + PUT
+============================================================
+
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
+function ModositFilm() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+
+  const [title, setTitle] = useState('')
+  const [releaseDate, setReleaseDate] = useState('')
+  const [actorId, setActorId] = useState('')
+  const [filmTypeId, setFilmTypeId] = useState('')
+
+  useEffect(() => {
+    axios.get(`https://localhost:7232/api/films/${id}`)
+      .then(res => {
+        setTitle(res.data.title)
+        setReleaseDate(res.data.releaseDate)
+        setActorId(res.data.actorId)
+        setFilmTypeId(res.data.filmTypeId)
+      })
+      .catch(err => console.log(err))
+  }, [id])
+
+  const kuldes = (e) => {
+    e.preventDefault()
+
+    const modositottFilm = {
+      title,
+      releaseDate,
+      actorId: Number(actorId),
+      filmTypeId: Number(filmTypeId)
+    }
+
+    axios.put(`https://localhost:7232/api/films/${id}`, modositottFilm)
+      .then(() => navigate('/filmek'))
+      .catch(err => console.log(err))
+  }
+
+  return (
+    <>
+      <h1>Film módosítása</h1>
+
+      <form onSubmit={kuldes}>
+        <input className="form-control mb-2" value={title} onChange={e => setTitle(e.target.value)} />
+        <input className="form-control mb-2" type="date" value={releaseDate} onChange={e => setReleaseDate(e.target.value)} />
+        <input className="form-control mb-2" type="number" value={actorId} onChange={e => setActorId(e.target.value)} />
+        <input className="form-control mb-2" type="number" value={filmTypeId} onChange={e => setFilmTypeId(e.target.value)} />
+
+        <button className="btn btn-warning" type="submit">
+          Módosítás
+        </button>
+      </form>
+    </>
+  )
+}
+
+export default ModositFilm
+
+============================================================
+12) AXIOS MINTÁK
+============================================================
+
+GET:
+axios.get('https://localhost:7232/api/films')
+  .then(res => setFilmek(res.data))
+  .catch(err => console.log(err))
+
+GET ID:
+axios.get(`https://localhost:7232/api/films/${id}`)
+
+POST:
+axios.post('https://localhost:7232/api/films', ujFilm)
+
+PUT:
+axios.put(`https://localhost:7232/api/films/${id}`, modositottFilm)
+
+DELETE:
+axios.delete(`https://localhost:7232/api/films/${id}`)
+
+============================================================
+13) FORM MINTA
+============================================================
+
+<form onSubmit={kuldes}>
+  <input value={title} onChange={e => setTitle(e.target.value)} />
+  <button type="submit">Küldés</button>
+</form>
+
+const kuldes = (e) => {
+  e.preventDefault()
+}
+
+MIÉRT KELL e.preventDefault?
+Azért, hogy a form ne töltse újra az oldalt.
+
+============================================================
+14) STATE MINTÁK
+============================================================
+
+Szöveg:
+const [title, setTitle] = useState('')
+
+Lista:
+const [filmek, setFilmek] = useState([])
+
+Objektum:
+const [film, setFilm] = useState({})
+
+Betöltés induláskor:
+useEffect(() => {
+  betoltes()
+}, [])
+
+ID változásakor:
+useEffect(() => {
+  betoltes()
+}, [id])
+
+============================================================
+15) BACKEND MEZŐNÉV FONTOS
+============================================================
+
+Ha backend ezt várja:
+
+public string Title { get; set; }
+public DateOnly ReleaseDate { get; set; }
+public int ActorId { get; set; }
+public int FilmTypeId { get; set; }
+
+Akkor React POST:
+
+const ujFilm = {
+  title: title,
+  releaseDate: releaseDate,
+  actorId: Number(actorId),
+  filmTypeId: Number(filmTypeId)
+}
+
+Kisbetűs kezdés általában jó JSON-ben:
+Title -> title
+ReleaseDate -> releaseDate
+ActorId -> actorId
+
+============================================================
+16) SELECT / LEGÖRDÜLŐ IDEGEN KULCSHOZ
+============================================================
+
+const [actors, setActors] = useState([])
+const [actorId, setActorId] = useState('')
+
+useEffect(() => {
+  axios.get('https://localhost:7232/api/actors')
+    .then(res => setActors(res.data))
+    .catch(err => console.log(err))
+}, [])
+
+<select className="form-select" value={actorId} onChange={e => setActorId(e.target.value)}>
+  <option value="">Válassz színészt</option>
+
+  {actors.map((actor, index) => (
+    <option key={index} value={actor.id}>
+      {actor.name}
+    </option>
+  ))}
+</select>
+
+POST-nál:
+actorId: Number(actorId)
+
+============================================================
+17) KÁRTYÁS MEGJELENÍTÉS
+============================================================
+
+<div className="row">
+  {filmek.map((film, index) => (
+    <div className="col-md-4 mb-3" key={index}>
+      <div className="card">
+        <div className="card-body">
+          <h5>{film.title}</h5>
+          <p>{film.releaseDate}</p>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+============================================================
+18) TÁBLÁZATOS MEGJELENÍTÉS
+============================================================
+
+<table className="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>Cím</th>
+      <th>Dátum</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {filmek.map((film, index) => (
+      <tr key={index}>
+        <td>{film.title}</td>
+        <td>{film.releaseDate}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+============================================================
+19) GYAKORI HIBÁK
+============================================================
+
+Semmit nem ír ki:
+map-ben nincs return.
+
+Rossz:
+{filmek.map((film) => {
+  <p>{film.title}</p>
+})}
+
+Jó:
+{filmek.map((film) => (
+  <p>{film.title}</p>
+))}
+
+Vagy:
+{filmek.map((film) => {
+  return <p>{film.title}</p>
+})}
+
+POST nem működik:
+- endpoint rossz
+- CORS nincs backendben
+- Number(actorId) kimaradt
+- mezőnév nem egyezik
+- dátum nem jó formátum
+- backend nem fut
+
+Route nem működik:
+main.jsx-ben kell BrowserRouter
+App.jsx-ben kell Routes és Route
+
+useParams nem működik:
+import { useParams } from 'react-router-dom'
+
+Link nem működik:
+import { Link } from 'react-router-dom'
+
+Bootstrap nem működik:
+main.jsx:
+import 'bootstrap/dist/css/bootstrap.min.css'
+
+============================================================
+20) VIZSGÁS FRONTEND MENET
+============================================================
+
+1. Vite React projekt
+2. axios, react-router-dom, bootstrap
+3. main.jsx BrowserRouter + bootstrap import
+4. App.jsx route-ok
+5. Navigation
+6. Home
+7. Lista oldal axios GET-tel
+8. map kiíratás
+9. Részletek oldal useParams-szal
+10. POST form
+11. DELETE gomb
+12. PUT módosítás, ha kell
+13. kinézet Bootstrap classokkal

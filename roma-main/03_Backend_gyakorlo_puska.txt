@@ -1,0 +1,571 @@
+BACKEND GYAKORLÓ PUSKA – ASP.NET CORE WEB API / EF CORE
+Vizsga előtti ismétlő. Nem rejtett vizsgás használatra.
+Átírandó nevek: AppDbContext, Film, Actor, DbSet nevek, connection string, controller route-ok.
+
+============================================================
+1) PROGRAM.CS – ALAP WEB API
+============================================================
+
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+using VizsgaBackend.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers()
+    .AddJsonOptions(x =>
+        x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseCors("frontend");
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+============================================================
+2) APPSETTINGS.JSON – CONNECTION STRING
+============================================================
+
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "server=localhost;database=vizsga;user=root;password=;"
+  },
+  "UID": "titkos123"
+}
+
+============================================================
+3) DB CONTEXT MINTA
+============================================================
+
+using Microsoft.EntityFrameworkCore;
+
+namespace VizsgaBackend.Models
+{
+    public partial class AppDbContext : DbContext
+    {
+        public AppDbContext()
+        {
+        }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+        }
+
+        public virtual DbSet<Film> Films { get; set; }
+        public virtual DbSet<Actor> Actors { get; set; }
+        public virtual DbSet<FilmType> FilmTypes { get; set; }
+    }
+}
+
+============================================================
+4) MODEL – EGY TÁBLA
+============================================================
+
+namespace VizsgaBackend.Models
+{
+    public partial class Film
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = null!;
+        public DateOnly ReleaseDate { get; set; }
+        public int ActorId { get; set; }
+        public int FilmTypeId { get; set; }
+
+        public virtual Actor Actor { get; set; } = null!;
+        public virtual FilmType FilmType { get; set; } = null!;
+    }
+}
+
+============================================================
+5) CONTROLLER ALAP
+============================================================
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using VizsgaBackend.Models;
+
+namespace VizsgaBackend.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class FilmsController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
+
+        public FilmsController(AppDbContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _configuration = configuration;
+        }
+    }
+}
+
+============================================================
+6) GET – ÖSSZES ADAT
+============================================================
+
+[HttpGet]
+public IActionResult GetAll()
+{
+    var films = _context.Films.ToList();
+
+    return Ok(films);
+}
+
+ELÉRÉS:
+GET /api/films
+
+============================================================
+7) GET – ÖSSZES ADAT INCLUDE-DAL
+============================================================
+
+[HttpGet("osszes")]
+public IActionResult GetAllWithInclude()
+{
+    var films = _context.Films
+        .Include(x => x.Actor)
+        .Include(x => x.FilmType)
+        .ToList();
+
+    return Ok(films);
+}
+
+ELÉRÉS:
+GET /api/films/osszes
+
+============================================================
+8) GET – ID ALAPJÁN
+============================================================
+
+[HttpGet("{id}")]
+public IActionResult GetById(int id)
+{
+    var film = _context.Films
+        .Include(x => x.Actor)
+        .Include(x => x.FilmType)
+        .FirstOrDefault(x => x.Id == id);
+
+    if (film == null)
+    {
+        return NotFound("Nincs ilyen film.");
+    }
+
+    return Ok(film);
+}
+
+ELÉRÉS:
+GET /api/films/3
+
+============================================================
+9) GET – NÉV / CÍM ALAPJÁN KERESÉS
+============================================================
+
+[HttpGet("kereses/{title}")]
+public IActionResult SearchByTitle(string title)
+{
+    var films = _context.Films
+        .Where(x => x.Title.Contains(title))
+        .ToList();
+
+    return Ok(films);
+}
+
+ELÉRÉS:
+GET /api/films/kereses/star
+
+============================================================
+10) GET – SZŰRÉS KATEGÓRIA / IDEGEN KULCS ALAPJÁN
+============================================================
+
+[HttpGet("tipus/{filmTypeId}")]
+public IActionResult GetByType(int filmTypeId)
+{
+    var films = _context.Films
+        .Where(x => x.FilmTypeId == filmTypeId)
+        .ToList();
+
+    return Ok(films);
+}
+
+ELÉRÉS:
+GET /api/films/tipus/2
+
+============================================================
+11) GET – KÉT TÁBLÁS LEKÉRDEZÉS DTO-VAL
+============================================================
+
+[HttpGet("lista")]
+public IActionResult GetFilmList()
+{
+    var films = _context.Films
+        .Include(x => x.Actor)
+        .Include(x => x.FilmType)
+        .Select(x => new
+        {
+            x.Id,
+            x.Title,
+            x.ReleaseDate,
+            ActorName = x.Actor.Name,
+            TypeName = x.FilmType.Name
+        })
+        .ToList();
+
+    return Ok(films);
+}
+
+ELÉRÉS:
+GET /api/films/lista
+
+============================================================
+12) POST – EGYSZERŰ HOZZÁADÁS
+============================================================
+
+[HttpPost]
+public IActionResult Create(Film film)
+{
+    _context.Films.Add(film);
+    _context.SaveChanges();
+
+    return Ok(film);
+}
+
+BODY JSON:
+{
+  "title": "Titanic",
+  "releaseDate": "1997-12-19",
+  "actorId": 1,
+  "filmTypeId": 2
+}
+
+============================================================
+13) POST – UID VÉDELEMMEL
+============================================================
+
+[HttpPost("uid")]
+public IActionResult CreateWithUid([FromQuery] string uid, Film film)
+{
+    string goodUid = _configuration["UID"];
+
+    if (uid != goodUid)
+    {
+        return Unauthorized("Hibás UID.");
+    }
+
+    _context.Films.Add(film);
+    _context.SaveChanges();
+
+    return Ok(film);
+}
+
+ELÉRÉS:
+POST /api/films/uid?uid=titkos123
+
+============================================================
+14) POST DTO-VAL – HA NEM AKARSZ TELJES MODELLT KÉRNI
+============================================================
+
+public class FilmCreateDto
+{
+    public string Title { get; set; } = null!;
+    public DateOnly ReleaseDate { get; set; }
+    public int ActorId { get; set; }
+    public int FilmTypeId { get; set; }
+}
+
+[HttpPost("dto")]
+public IActionResult CreateDto(FilmCreateDto dto)
+{
+    Film film = new Film
+    {
+        Title = dto.Title,
+        ReleaseDate = dto.ReleaseDate,
+        ActorId = dto.ActorId,
+        FilmTypeId = dto.FilmTypeId
+    };
+
+    _context.Films.Add(film);
+    _context.SaveChanges();
+
+    return Ok(film);
+}
+
+============================================================
+15) PUT – MÓDOSÍTÁS
+============================================================
+
+[HttpPut("{id}")]
+public IActionResult Update(int id, Film ujFilm)
+{
+    var film = _context.Films.FirstOrDefault(x => x.Id == id);
+
+    if (film == null)
+    {
+        return NotFound("Nincs ilyen film.");
+    }
+
+    film.Title = ujFilm.Title;
+    film.ReleaseDate = ujFilm.ReleaseDate;
+    film.ActorId = ujFilm.ActorId;
+    film.FilmTypeId = ujFilm.FilmTypeId;
+
+    _context.SaveChanges();
+
+    return Ok(film);
+}
+
+ELÉRÉS:
+PUT /api/films/3
+
+============================================================
+16) DELETE – TÖRLÉS
+============================================================
+
+[HttpDelete("{id}")]
+public IActionResult Delete(int id)
+{
+    var film = _context.Films.FirstOrDefault(x => x.Id == id);
+
+    if (film == null)
+    {
+        return NotFound("Nincs ilyen film.");
+    }
+
+    _context.Films.Remove(film);
+    _context.SaveChanges();
+
+    return Ok("Törölve.");
+}
+
+ELÉRÉS:
+DELETE /api/films/3
+
+============================================================
+17) DARABSZÁM / STATISZTIKA
+============================================================
+
+[HttpGet("darab")]
+public IActionResult CountFilms()
+{
+    int db = _context.Films.Count();
+
+    return Ok(db);
+}
+
+[HttpGet("atlag")]
+public IActionResult Average()
+{
+    double atlag = _context.Films.Average(x => x.Id);
+
+    return Ok(atlag);
+}
+
+============================================================
+18) SQL SCAFFOLD PARANCS
+============================================================
+
+Scaffold-DbContext "server=localhost;database=vizsga;user=root;password=;" Pomelo.EntityFrameworkCore.MySql -OutputDir Models -Context AppDbContext -f
+
+Ha Package Manager Console:
+Tools -> NuGet Package Manager -> Package Manager Console
+
+Kellhet:
+Microsoft.EntityFrameworkCore
+Microsoft.EntityFrameworkCore.Tools
+Pomelo.EntityFrameworkCore.MySql
+
+============================================================
+19) CORS HIBA JAVÍTÁSA
+============================================================
+
+Program.cs-ben legyen:
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+app.UseCors("frontend");
+
+FONTOS:
+app.UseCors legyen app.MapControllers előtt.
+
+============================================================
+20) JSON KÖRKÖRÖS HIBA JAVÍTÁSA
+============================================================
+
+using System.Text.Json.Serialization;
+
+builder.Services.AddControllers()
+    .AddJsonOptions(x =>
+        x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+============================================================
+21) DATEONLY HIBA FRONTENDNÉL
+============================================================
+
+Backend DateOnly ezt szereti:
+
+"2024-05-18"
+
+React input type="date" pont ilyen formát ad.
+
+============================================================
+22) TELJES FILMSCONTROLLER MINTA
+============================================================
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using VizsgaBackend.Models;
+
+namespace VizsgaBackend.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class FilmsController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
+
+        public FilmsController(AppDbContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _configuration = configuration;
+        }
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var films = _context.Films.ToList();
+            return Ok(films);
+        }
+
+        [HttpGet("lista")]
+        public IActionResult GetList()
+        {
+            var films = _context.Films
+                .Include(x => x.Actor)
+                .Include(x => x.FilmType)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    x.ReleaseDate,
+                    ActorName = x.Actor.Name,
+                    TypeName = x.FilmType.Name
+                })
+                .ToList();
+
+            return Ok(films);
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            var film = _context.Films.FirstOrDefault(x => x.Id == id);
+
+            if (film == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(film);
+        }
+
+        [HttpPost]
+        public IActionResult Create(Film film)
+        {
+            _context.Films.Add(film);
+            _context.SaveChanges();
+
+            return Ok(film);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, Film ujFilm)
+        {
+            var film = _context.Films.FirstOrDefault(x => x.Id == id);
+
+            if (film == null)
+            {
+                return NotFound();
+            }
+
+            film.Title = ujFilm.Title;
+            film.ReleaseDate = ujFilm.ReleaseDate;
+            film.ActorId = ujFilm.ActorId;
+            film.FilmTypeId = ujFilm.FilmTypeId;
+
+            _context.SaveChanges();
+
+            return Ok(film);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var film = _context.Films.FirstOrDefault(x => x.Id == id);
+
+            if (film == null)
+            {
+                return NotFound();
+            }
+
+            _context.Films.Remove(film);
+            _context.SaveChanges();
+
+            return Ok();
+        }
+    }
+}
+
+============================================================
+23) VIZSGÁS BACKEND MENET
+============================================================
+
+1. SQL adatbázis kész
+2. Backend projekt
+3. NuGet csomagok
+4. Scaffold
+5. Program.cs connection string + CORS + JSON ignore cycles
+6. Controller
+7. GET all
+8. GET id
+9. GET include/lista
+10. POST
+11. PUT
+12. DELETE
+13. Swagger próba
+14. Frontend próba

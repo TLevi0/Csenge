@@ -1,0 +1,480 @@
+WPF GYAKORLÓ PUSKA – VIZSGA ELŐTTI ISMÉTLŐ
+Nem rejtett vizsgás használatra, hanem gyors ismétlésre.
+Átírandó nevek: AutoAdatok, Program.AdatokLista, mezőnevek, TextBox/DataGrid nevek.
+
+============================================================
+1) MAINWINDOW.XAML ALAP
+============================================================
+
+<Window x:Class="WPFgyakorlas.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gyakorlás"
+        Height="500"
+        Width="900"
+        Loaded="Window_Loaded">
+
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <DataGrid x:Name="DTGadatok"
+                  Grid.Column="0"
+                  AutoGenerateColumns="True"
+                  IsReadOnly="True"
+                  SelectionChanged="DTGadatok_SelectionChanged"/>
+
+        <StackPanel Grid.Column="1" Margin="15,0,0,0">
+
+            <TextBlock Text="Részletek" FontSize="22" FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Név"/>
+            <TextBox x:Name="TBNev" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Év"/>
+            <TextBox x:Name="TBEv" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Darab"/>
+            <TextBox x:Name="TBDarab" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Rendezés"/>
+            <ComboBox x:Name="CBRendezes"
+                      SelectionChanged="CBRendezes_SelectionChanged"
+                      Margin="0,0,0,10"/>
+
+            <TextBlock Text="Szűrés típus alapján"/>
+            <TextBox x:Name="TBSzures" Margin="0,0,0,10"/>
+
+            <Button Content="Szűrés"
+                    Click="BTSzures_Click"
+                    Margin="0,0,0,10"/>
+
+            <Button Content="Visszaállítás"
+                    Click="BTVissza_Click"
+                    Margin="0,0,0,10"/>
+
+            <TextBlock x:Name="TBOsszegzes"
+                       FontWeight="Bold"
+                       Margin="0,15,0,0"/>
+        </StackPanel>
+    </Grid>
+</Window>
+
+============================================================
+2) MAINWINDOW.XAML.CS ALAP
+============================================================
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace WPFgyakorlas
+{
+    public partial class MainWindow : Window
+    {
+        private List<AutoAdatok> EredetiLista = new List<AutoAdatok>();
+        private List<AutoAdatok> AktualLista = new List<AutoAdatok>();
+
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Program.Beolvasas();
+
+            EredetiLista = Program.AdatokLista.ToList();
+            AktualLista = Program.AdatokLista.ToList();
+
+            DTGadatok.ItemsSource = AktualLista;
+
+            CBRendezes.Items.Add("Név");
+            CBRendezes.Items.Add("Év");
+            CBRendezes.Items.Add("Darab");
+
+            OsszegzesKiir();
+        }
+
+        private void Frissit()
+        {
+            DTGadatok.ItemsSource = null;
+            DTGadatok.ItemsSource = AktualLista;
+
+            OsszegzesKiir();
+        }
+
+        private void OsszegzesKiir()
+        {
+            int db = AktualLista.Count;
+            int osszeg = 0;
+
+            for (int i = 0; i < AktualLista.Count; i++)
+            {
+                osszeg += AktualLista[i].Darab;
+            }
+
+            double atlag = 0;
+
+            if (db > 0)
+            {
+                atlag = (double)osszeg / db;
+            }
+
+            TBOsszegzes.Text = $"Darab: {db}, összeg: {osszeg}, átlag: {Math.Round(atlag, 1)}";
+        }
+    }
+}
+
+============================================================
+3) DATAGRID KIJELÖLÉS -> TEXTBOXOK
+============================================================
+
+private void DTGadatok_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    AutoAdatok adat = DTGadatok.SelectedItem as AutoAdatok;
+
+    if (adat == null)
+    {
+        return;
+    }
+
+    TBNev.Text = adat.Nev;
+    TBEv.Text = adat.Ev.ToString();
+    TBDarab.Text = adat.Darab.ToString();
+}
+
+============================================================
+4) COMBOBOXOS RENDEZÉS
+============================================================
+
+private void CBRendezes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (CBRendezes.SelectedItem == null)
+    {
+        return;
+    }
+
+    string valasztott = CBRendezes.SelectedItem.ToString();
+
+    if (valasztott == "Név")
+    {
+        AktualLista = AktualLista.OrderBy(x => x.Nev).ToList();
+    }
+    else if (valasztott == "Év")
+    {
+        AktualLista = AktualLista.OrderBy(x => x.Ev).ToList();
+    }
+    else if (valasztott == "Darab")
+    {
+        AktualLista = AktualLista.OrderBy(x => x.Darab).ToList();
+    }
+
+    Frissit();
+}
+
+CSÖKKENŐ:
+AktualLista = AktualLista.OrderByDescending(x => x.Darab).ToList();
+
+============================================================
+5) TEXTBOXOS SZŰRÉS
+============================================================
+
+private void BTSzures_Click(object sender, RoutedEventArgs e)
+{
+    string keresett = TBSzures.Text.ToLower();
+
+    AktualLista = EredetiLista
+        .Where(x => x.Tipus.ToLower().Contains(keresett))
+        .ToList();
+
+    Frissit();
+}
+
+PONTOS EGYEZÉS:
+.Where(x => x.Tipus.ToLower() == keresett)
+
+SZÁM ALAPJÁN:
+int ev = int.Parse(TBSzures.Text);
+
+AktualLista = EredetiLista
+    .Where(x => x.Ev == ev)
+    .ToList();
+
+Frissit();
+
+============================================================
+6) VISSZAÁLLÍTÁS
+============================================================
+
+private void BTVissza_Click(object sender, RoutedEventArgs e)
+{
+    AktualLista = EredetiLista.ToList();
+
+    TBNev.Text = "";
+    TBEv.Text = "";
+    TBDarab.Text = "";
+    TBSzures.Text = "";
+
+    Frissit();
+}
+
+============================================================
+7) LINQ NÉLKÜLI SZŰRÉS
+============================================================
+
+private void BTSzures_Click(object sender, RoutedEventArgs e)
+{
+    string keresett = TBSzures.Text.ToLower();
+
+    AktualLista = new List<AutoAdatok>();
+
+    for (int i = 0; i < EredetiLista.Count; i++)
+    {
+        if (EredetiLista[i].Tipus.ToLower().Contains(keresett))
+        {
+            AktualLista.Add(EredetiLista[i]);
+        }
+    }
+
+    Frissit();
+}
+
+============================================================
+8) PROGRAM.CS BEOLVASÁS WPF-HEZ
+============================================================
+
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
+namespace WPFgyakorlas
+{
+    internal class Program
+    {
+        public static List<AutoAdatok> AdatokLista = new List<AutoAdatok>();
+
+        public static void Beolvasas()
+        {
+            StreamReader sr = new StreamReader("adatok.txt", Encoding.UTF8);
+
+            sr.ReadLine();
+
+            while (!sr.EndOfStream)
+            {
+                string sor = sr.ReadLine();
+                AdatokLista.Add(new AutoAdatok(sor));
+            }
+
+            sr.Close();
+        }
+    }
+}
+
+============================================================
+9) ADATOSZTÁLY WPF-HEZ
+============================================================
+
+namespace WPFgyakorlas
+{
+    public class AutoAdatok
+    {
+        public string Nev { get; set; }
+        public int Ev { get; set; }
+        public int Darab { get; set; }
+        public string Tipus { get; set; }
+
+        public AutoAdatok(string sor)
+        {
+            string[] temp = sor.Split(';');
+
+            Nev = temp[0];
+            Ev = int.Parse(temp[1]);
+            Darab = int.Parse(temp[2]);
+            Tipus = temp[3];
+        }
+    }
+}
+
+============================================================
+10) KÉZI DATAGRID OSZLOPOK
+============================================================
+
+<DataGrid x:Name="DTGadatok"
+          AutoGenerateColumns="False"
+          IsReadOnly="True"
+          SelectionChanged="DTGadatok_SelectionChanged">
+
+    <DataGrid.Columns>
+        <DataGridTextColumn Header="Név" Binding="{Binding Nev}"/>
+        <DataGridTextColumn Header="Év" Binding="{Binding Ev}"/>
+        <DataGridTextColumn Header="Darab" Binding="{Binding Darab}"/>
+        <DataGridTextColumn Header="Típus" Binding="{Binding Tipus}"/>
+    </DataGrid.Columns>
+</DataGrid>
+
+============================================================
+11) COMBOBOX FELTÖLTÉSE EGYEDI TÍPUSOKKAL
+============================================================
+
+private void TipusokBetoltese()
+{
+    CBTipus.Items.Clear();
+
+    for (int i = 0; i < EredetiLista.Count; i++)
+    {
+        if (!CBTipus.Items.Contains(EredetiLista[i].Tipus))
+        {
+            CBTipus.Items.Add(EredetiLista[i].Tipus);
+        }
+    }
+}
+
+Window_Loaded-ben:
+TipusokBetoltese();
+
+============================================================
+12) COMBOBOX SZŰRÉS
+============================================================
+
+private void CBTipus_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (CBTipus.SelectedItem == null)
+    {
+        return;
+    }
+
+    string tipus = CBTipus.SelectedItem.ToString();
+
+    AktualLista = EredetiLista
+        .Where(x => x.Tipus == tipus)
+        .ToList();
+
+    Frissit();
+}
+
+============================================================
+13) TEXTBOX MÓDOSÍTÁS KIJELÖLT ADATON
+============================================================
+
+private void BTMentes_Click(object sender, RoutedEventArgs e)
+{
+    AutoAdatok adat = DTGadatok.SelectedItem as AutoAdatok;
+
+    if (adat == null)
+    {
+        MessageBox.Show("Nincs kijelölt adat.");
+        return;
+    }
+
+    adat.Nev = TBNev.Text;
+    adat.Ev = int.Parse(TBEv.Text);
+    adat.Darab = int.Parse(TBDarab.Text);
+
+    Frissit();
+
+    MessageBox.Show("Módosítva.");
+}
+
+============================================================
+14) FÁJLBA ÍRÁS WPF-BŐL
+============================================================
+
+private void BTFajlbaIras_Click(object sender, RoutedEventArgs e)
+{
+    StreamWriter sw = new StreamWriter("mentes.txt", false, Encoding.UTF8);
+
+    for (int i = 0; i < AktualLista.Count; i++)
+    {
+        sw.WriteLine($"{AktualLista[i].Nev};{AktualLista[i].Ev};{AktualLista[i].Darab};{AktualLista[i].Tipus}");
+    }
+
+    sw.Close();
+
+    MessageBox.Show("Mentés kész.");
+}
+
+KELL:
+using System.IO;
+using System.Text;
+
+============================================================
+15) MÁSODIK ABLAK MEGNYITÁSA
+============================================================
+
+private void BTStatisztika_Click(object sender, RoutedEventArgs e)
+{
+    StatisztikaWindow ablak = new StatisztikaWindow(AktualLista);
+    ablak.ShowDialog();
+}
+
+Második ablakban:
+
+private List<AutoAdatok> KapottLista;
+
+public StatisztikaWindow(List<AutoAdatok> lista)
+{
+    InitializeComponent();
+
+    KapottLista = lista;
+
+    TBOsszegzes.Text = $"Kapott adatok száma: {KapottLista.Count}";
+}
+
+============================================================
+16) XAML GYORS ELEMEK
+============================================================
+
+<Button Content="Mentés" Click="BTMentes_Click"/>
+
+<TextBox x:Name="TBNev"/>
+
+<TextBlock Text="Név"/>
+
+<ComboBox x:Name="CBTipus"
+          SelectionChanged="CBTipus_SelectionChanged"/>
+
+<DataGrid x:Name="DTGadatok"
+          AutoGenerateColumns="True"
+          IsReadOnly="True"
+          SelectionChanged="DTGadatok_SelectionChanged"/>
+
+============================================================
+17) COPY ALWAYS
+============================================================
+
+Ha a txt fájlt nem találja:
+1. jobb klikk az adatok.txt fájlon
+2. Properties
+3. Copy to Output Directory
+4. Copy Always
+
+============================================================
+18) GYAKORI WPF HIBÁK
+============================================================
+
+DataGrid nem frissül:
+DTGadatok.ItemsSource = null;
+DTGadatok.ItemsSource = AktualLista;
+
+SelectedItem hibát dob:
+if (adat == null) return;
+
+Program.AdatokLista nem látszik:
+public static List legyen
+
+DataGrid nem írja ki a mezőket:
+public class és public property kell
+
+XAML esemény piros:
+Click vagy SelectionChanged neve pontosan egyezzen
+
+EredetiLista:
+ne bántsd, abból állítasz vissza
+
+AktualLista:
+ezt szűröd, rendezed, jeleníted meg

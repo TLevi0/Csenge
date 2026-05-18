@@ -1,0 +1,456 @@
+CONSOLE GYAKORLÓ PUSKA – VIZSGA ELŐTTI ISMÉTLŐ
+Nem rejtett vizsgás használatra, hanem gyors ismétlésre.
+Átírandó nevek: Adat, Lista, mezőnevek, fájlnév, elválasztó jel.
+
+============================================================
+1) PROGRAM ALAP
+============================================================
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
+namespace ConsoleGyakorlas
+{
+    internal class Program
+    {
+        static List<Adat> Lista = new List<Adat>();
+
+        static void Main(string[] args)
+        {
+            Beolvasas();
+
+            Feladat2();
+            Feladat3();
+            Feladat4();
+
+            Console.ReadKey();
+        }
+
+        private static void Beolvasas()
+        {
+            StreamReader sr = new StreamReader("adatok.txt", Encoding.UTF8);
+
+            sr.ReadLine(); // fejléc, ha van
+
+            while (!sr.EndOfStream)
+            {
+                string sor = sr.ReadLine();
+                Lista.Add(new Adat(sor));
+            }
+
+            sr.Close();
+        }
+    }
+}
+
+============================================================
+2) OSZTÁLY + KONSTRUKTOR
+============================================================
+
+internal class Adat
+{
+    public string Nev { get; set; }
+    public int Ev { get; set; }
+    public int Darab { get; set; }
+    public string Tipus { get; set; }
+
+    public Adat(string sor)
+    {
+        string[] temp = sor.Split(';');
+
+        Nev = temp[0];
+        Ev = int.Parse(temp[1]);
+        Darab = int.Parse(temp[2]);
+        Tipus = temp[3];
+    }
+}
+
+TABULÁTOROS FÁJL:
+string[] temp = sor.Split('\t');
+
+TÖBBRÉSZES MEZŐ:
+string[] temp = sor.Split('\t');
+string[] temp2 = temp[1].Split(',');
+
+Kod = temp[0];
+Megnevezes = temp2[0];
+
+============================================================
+3) DARABSZÁM / ÖSSZEG / ÁTLAG
+============================================================
+
+private static void Darabszam()
+{
+    Console.WriteLine($"Adatok száma: {Lista.Count}");
+}
+
+private static void Osszeg()
+{
+    int osszeg = 0;
+
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        osszeg += Lista[i].Darab;
+    }
+
+    Console.WriteLine($"Összeg: {osszeg}");
+}
+
+private static void Atlag()
+{
+    int osszeg = 0;
+
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        osszeg += Lista[i].Darab;
+    }
+
+    double atlag = (double)osszeg / Lista.Count;
+
+    Console.WriteLine($"Átlag: {Math.Round(atlag, 1)}");
+}
+
+HA KELL A ,0:
+Console.WriteLine($"{atlag:0.0}");
+
+============================================================
+4) MINIMUM / MAXIMUM
+============================================================
+
+private static void Maximum()
+{
+    int max = Lista[0].Darab;
+    int maxIndex = 0;
+
+    for (int i = 1; i < Lista.Count; i++)
+    {
+        if (Lista[i].Darab > max)
+        {
+            max = Lista[i].Darab;
+            maxIndex = i;
+        }
+    }
+
+    Console.WriteLine($"Legnagyobb: {Lista[maxIndex].Nev} - {max}");
+}
+
+private static void Minimum()
+{
+    int min = Lista[0].Darab;
+    int minIndex = 0;
+
+    for (int i = 1; i < Lista.Count; i++)
+    {
+        if (Lista[i].Darab < min)
+        {
+            min = Lista[i].Darab;
+            minIndex = i;
+        }
+    }
+
+    Console.WriteLine($"Legkisebb: {Lista[minIndex].Nev} - {min}");
+}
+
+============================================================
+5) KERESÉS BEKÉRT ADATTAL
+============================================================
+
+private static void Kereses()
+{
+    Console.Write("Keresett név: ");
+    string keresett = Console.ReadLine();
+
+    bool talalt = false;
+
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        if (Lista[i].Nev.ToLower() == keresett.ToLower())
+        {
+            Console.WriteLine($"{Lista[i].Nev} {Lista[i].Ev} {Lista[i].Darab}");
+            talalt = true;
+        }
+    }
+
+    if (!talalt)
+    {
+        Console.WriteLine("Nincs ilyen adat.");
+    }
+}
+
+TARTALMAZZA:
+if (Lista[i].Nev.ToLower().Contains(keresett.ToLower()))
+
+============================================================
+6) SZŰRÉS FELTÉTEL ALAPJÁN
+============================================================
+
+private static void Szures()
+{
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        if (Lista[i].Ev >= 2020 && Lista[i].Ev <= 2023)
+        {
+            Console.WriteLine($"{Lista[i].Nev} {Lista[i].Ev}");
+        }
+    }
+}
+
+TÖBB FELTÉTEL:
+if (Lista[i].Ev == 2024 && Lista[i].Tipus == "ma")
+{
+    Console.WriteLine(Lista[i].Nev);
+}
+
+============================================================
+7) ÉVENKÉNTI ÖSSZESÍTÉS
+============================================================
+
+private static void EvesOsszesites()
+{
+    for (int ev = 2020; ev <= 2023; ev++)
+    {
+        int darab = 0;
+        int osszeg = 0;
+
+        for (int i = 0; i < Lista.Count; i++)
+        {
+            if (Lista[i].Ev == ev)
+            {
+                darab++;
+                osszeg += Lista[i].Darab;
+            }
+        }
+
+        Console.WriteLine($"{ev}: {darab} db, {osszeg} összesen");
+    }
+}
+
+FONTOS:
+A darab és osszeg az év cikluson belül legyen nullázva.
+
+============================================================
+8) KÉT KATEGÓRIA ÉVENKÉNT
+============================================================
+
+private static void KetKategoriaEvesen()
+{
+    for (int ev = 2020; ev <= 2023; ev++)
+    {
+        int magyarDb = 0;
+        int magyarOsszeg = 0;
+        int kulfoldiDb = 0;
+        int kulfoldiOsszeg = 0;
+
+        for (int i = 0; i < Lista.Count; i++)
+        {
+            if (Lista[i].Ev == ev && Lista[i].Tipus == "ma")
+            {
+                magyarDb++;
+                magyarOsszeg += Lista[i].Darab;
+            }
+            else if (Lista[i].Ev == ev && Lista[i].Tipus == "kf")
+            {
+                kulfoldiDb++;
+                kulfoldiOsszeg += Lista[i].Darab;
+            }
+        }
+
+        Console.WriteLine($"{ev}\t{magyarDb}\t{magyarOsszeg}\t{kulfoldiDb}\t{kulfoldiOsszeg}");
+    }
+}
+
+============================================================
+9) IDŐ ÁTVÁLTÁSA PERCBE
+============================================================
+
+private static int IdoPercben(string ido)
+{
+    string[] temp = ido.Split(':');
+
+    int ora = int.Parse(temp[0]);
+    int perc = int.Parse(temp[1]);
+
+    return ora * 60 + perc;
+}
+
+HASZNÁLAT:
+int kezdes = IdoPercben("07:45");
+int vege = IdoPercben("14:20");
+int kulonbseg = vege - kezdes;
+
+Console.WriteLine($"{kulonbseg} perc");
+
+============================================================
+10) ELSŐ BELÉPÉS / UTOLSÓ KILÉPÉS LOGIKA
+============================================================
+
+private static void BelepesKilepes()
+{
+    Console.Write("Azonosító: ");
+    string azon = Console.ReadLine();
+
+    string belepes = "";
+    string kilepes = "";
+
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        if (Lista[i].Nev == azon && Lista[i].Tipus == "belépés" && belepes == "")
+        {
+            belepes = Lista[i].Ev.ToString();
+        }
+
+        if (Lista[i].Nev == azon && Lista[i].Tipus == "kilépés")
+        {
+            kilepes = Lista[i].Ev.ToString();
+        }
+    }
+
+    Console.WriteLine($"Első belépés: {belepes}");
+    Console.WriteLine($"Utolsó kilépés: {kilepes}");
+}
+
+============================================================
+11) TRY PARSE – HA NÉHA SZÁM, NÉHA SZÖVEG
+============================================================
+
+private static void TryParseMinta()
+{
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        if (int.TryParse(Lista[i].Tipus, out int szam))
+        {
+            Console.WriteLine($"Ez szám: {szam}");
+        }
+    }
+}
+
+============================================================
+12) LEGKISEBB SEBESSÉG AZ ELSŐ X KM-EN
+============================================================
+
+private static void LegalacsonyabbSebesseg()
+{
+    Console.Write("Adja meg a vizsgált szakasz hosszát km-ben: ");
+    double km = double.Parse(Console.ReadLine());
+
+    double meter = km * 1000;
+
+    int min = 999999;
+
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        if (Lista[i].Darab <= meter && int.TryParse(Lista[i].Tipus, out int sebesseg))
+        {
+            if (sebesseg < min)
+            {
+                min = sebesseg;
+            }
+        }
+    }
+
+    Console.WriteLine($"Az első {km} km-en {min} km/h volt a legalacsonyabb megengedett sebesség.");
+}
+
+Átírás:
+Lista[i].Darab = távolság méterben
+Lista[i].Tipus = jelzés, ami lehet szám vagy szöveg
+
+============================================================
+13) ISMÉTLŐDŐ ADATOK KERESÉSE
+============================================================
+
+private static void Ismetlodo()
+{
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        bool voltMar = false;
+
+        for (int k = 0; k < i; k++)
+        {
+            if (Lista[k].Nev == Lista[i].Nev)
+            {
+                voltMar = true;
+            }
+        }
+
+        if (!voltMar)
+        {
+            int db = 0;
+
+            for (int j = 0; j < Lista.Count; j++)
+            {
+                if (Lista[j].Nev == Lista[i].Nev)
+                {
+                    db++;
+                }
+            }
+
+            if (db >= 2)
+            {
+                Console.WriteLine($"{Lista[i].Nev} - {db} db");
+            }
+        }
+    }
+}
+
+============================================================
+14) FÁJLBA ÍRÁS
+============================================================
+
+private static void FajlbaIras()
+{
+    StreamWriter sw = new StreamWriter("eredmeny.txt", false, Encoding.UTF8);
+
+    for (int i = 0; i < Lista.Count; i++)
+    {
+        if (Lista[i].Ev == 2024)
+        {
+            sw.WriteLine($"{Lista[i].Nev};{Lista[i].Darab}");
+        }
+    }
+
+    sw.Close();
+}
+
+============================================================
+15) GYORS HIBÁK
+============================================================
+
+for ciklus:
+i < Lista.Count
+
+átlag:
+(double)osszeg / darab
+
+kerekítés:
+Math.Round(szam, 1)
+
+fájl nem található:
+txt fájl -> Properties -> Copy to Output Directory -> Copy Always
+
+első találat:
+break;
+
+minden találat:
+nincs break
+
+Split:
+sor.Split(';')
+sor.Split('\t')
+
+============================================================
+16) VIZSGÁS MENET
+============================================================
+
+1. Osztály
+2. Lista
+3. Beolvasás
+4. Kiíratás próbaként
+5. Darabszám
+6. Szűrés
+7. Min/max
+8. Összeg/átlag
+9. Keresés
+10. Fájlba írás
