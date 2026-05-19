@@ -1,0 +1,80 @@
+adatb kesz , download all 4 w right versions, nuget. 
+1.masol under. maybe del passw if not workin,
+program cs-bemasol3. components-new controller API empty: 
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class HajoController : ControllerBase
+GETALL
+    { 
+        [HttpGet]
+        public IActionResult GetAllHajos()
+        {
+            try
+            {
+                using (var cx = new CsatahajokContext())
+                {
+                    var response = cx.Hajos.ToList();
+                    return Ok(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+
+        }
+        [HttpGet("ById/{nev}")]
+        public IActionResult ById(string nev)
+        {
+            try
+            {
+                using (var cx = new CsatahajokContext())
+                {
+                    var response = cx.Hajos.FirstOrDefault(h => h.Nev == nev);
+
+                    if (response != null)
+                    {
+                        return Ok(response);
+                    }
+                    else
+                    {
+                        return StatusCode(404, $"Nincs ilyen nevű hajó: {nev}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, ex.Message);
+            }
+        }
+    }
+} 
+
+GETALL2
+[HttpGet]
+public IActionResult All()
+{
+    try
+    {
+        using(var cx = new CsatahajokContext())
+        {
+            var hajok = cx.Hajos.Select(hajo => new Hajo
+            {
+                Nev = hajo.Nev,
+                Osztaly = hajo.Osztaly,
+                Felavatva = hajo.Felavatva,
+                AgyukSzama = hajo.AgyukSzama,
+                Kaliber = hajo.Kaliber,
+                Vizkiszoritas = hajo.Vizkiszoritas,
+            }).ToList();
+
+            return Ok(hajok);
+        }
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(400, $"Hiba a művelet végrehajtása közben! \n {ex.Message}");
+    }
+}

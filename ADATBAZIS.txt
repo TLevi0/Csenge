@@ -1,0 +1,25 @@
+Tábla (Table):
+Egy munkalap. Például egy 
+felhasznalok tábla.
+
+Oszlop (Column / Field):
+Milyen típusú adatokat 
+tárolunk (pl. nev, email, eletkor).
+
+Sor (Row / Record):
+Egy konkrét bejegyzés,
+maga az adat (pl. Kovács Béla összes adata).
+
+Elsődleges kulcs (Primary Key - PK): 
+Ez egy sor egyedi azonosítója a táblában 
+(mint a te személyi igazolvány számod). Soha nem lehet belőle két egyforma. 
+Leggyakrabban egy id nevű, automatikusan növekvő szám (Auto Increment).
+
+Idegen kulcs (Foreign Key - FK):
+Ez egy hivatkozás egy másik tábla elsődleges kulcsára.
+Ezzel kötjük össze a táblákat. Például a rendelesek táblában lehet egy vasarlo_id oszlop,
+ami megmondja, hogy a vasarlok táblából melyik emberhez tartozik a rendelés.
+
+CASCADE
+
+IMPORT EXPORT IT

@@ -1,0 +1,540 @@
+<link rel="stylesheet" href="style.css">
+
+<ul> (Unordered List): Sorszámozatlan, 
+"pöttyös" lista.
+
+<ol> (Ordered List): 
+Sorszámozott lista (1., 2., 3. stb.).
+
+<li> (List Item): 
+Maga a lista eleme.
+Ezt a <ul> vagy <ol> közé kell tenni
+
+<table>: Ezzel nyitod meg és zárod be az egész táblázatot.
+
+<tr> (Table Row): Egy sor a táblázatban.
+Minden új sort ezzel kell kezdeni.
+
+<th> (Table Head): Fejléc cella.
+Ugyanolyan, mint egy sima cella, de a böngésző automatikusan vastagítja
+és középre igazítja a benne lévő szöveget (pl. "Név", "Kor").
+
+<td> (Table Data): Sima adatcella. 
+Ebbe kerülnek a tényleges adatok.
+
+Címsorok: <h1>-től <h6>-ig. Az <h1> a legnagyobb, 
+legfontosabb cím, a <h6> a legkisebb.
+
+Linkek (<a>): Erre is gyakran kell javítani
+vagy betenni újat.
+
+Így néz ki: <a href="https://www.google.com">Kattints ide</a>
+
+A href attribútum mondja meg, 
+hova vigyen a link.
+
+Képek (<img>): Ennek nincs záró tagje!
+
+Így néz ki: <img src="kep_neve.jpg" alt="Kép leírása">
+
+A src a kép elérési útja, az alt pedig az a szöveg,
+ami akkor jelenik meg, ha a kép nem tud betölteni 
+(vagy amit a felolvasó programok használnak).
+
+HTML tag (Címke) alapján: 
+Minden megadott címkét formáz az oldalon.
+
+CSS
+/* Minden <p> (bekezdés) kék lesz */
+p {
+    color: blue;
+}
+
+Class (Osztály) alapján - 
+A leggyakoribb! Ezt akkor használjuk,
+ha csak bizonyos elemeket akarunk formázni. 
+A HTML-ben <div class="doboz"> formában adjuk meg. 
+A CSS-ben egy ponttal (.) hivatkozunk rá.
+
+CSS
+/* Minden elem, aminek class="doboz" attribútuma van, zöld hátteret kap */
+.doboz {
+    background-color: green;
+}
+
+ID (Azonosító) alapján: Ezt csak egyetlen, egyedi elemnél használjuk egy oldalon (pl. <header id="fomenu">). A CSS-ben kettőskereszttel (#) hivatkozunk rá.
+
+CSS
+/* Csak az id="fomenu" elem lesz középre igazítva */
+#fomenu {
+    text-align: center;
+}
+
+padding (Belső margó): A tartalom 
+(pl. szöveg) és a keret közötti távolság. 
+Ettől a dobozod "kövérebb" lesz.
+
+border (Keret): Maga a doboz vonala 
+(lehet folytonos, szaggatott, stb.).
+
+margin (Külső margó): A dobozod és a többi, 
+mellette/alatta lévő doboz (elem) közötti távolság. 
+Ezzel tudod odébb tolni az elemeket.
+
+color: red; (A szöveg színe lesz piros)
+
+background-color: #f4f4f4; (A háttérszín megadása, lehet névvel,
+vagy ún. HEX kóddal, ami egy # és 6 karakter)
+
+font-size: 18px; (Betűméret)
+
+font-weight: bold; (Félkövér betű)
+
+text-align: center; (Középre igazítja a szöveget.
+Lehet left vagy right is).
+
+width: 100%; vagy width: 300px; (Szélesség)
+
+height: 200px; (Magasság)
+
+
+<!DOCTYPE html>
+<html lang="en">
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <title>Naprendszerünk bolygói</title>
+</head>
+
+<body>
+
+    <!-- Fejléc -->
+    <header class="solar-header">
+        <div class="text-center">
+
+        </div>
+        <img src="./img/fejlec.jpg" alt="Naprendszer" title="Naprendszer" id="fejlec">
+
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#bolygok">A Naprendszer bolygói</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#tabla">Adatok</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pluto">Plútó és más objektumok</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" target="_blank" href="https://hu.wikipedia.org/wiki/Naprendszer">A
+                            Naprendszerről bővebben</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+    </header>
+
+    <!-- Leírás -->
+    <section id="leiras" class="container">
+        <h2>A Naprendszer</h2>
+        <p>A Naprendszer a Nap körül keringő égitestek rendszere. A Nap a rendszer központja, melyet bolygók,
+            törpebolygók, holdak és más kisebb objektumok vesznek körül. A Naprendszer a galaxisunk, a Tejútrendszer
+            része.</p>
+    </section>
+
+    <!-- Bolygók -->
+    <section id="bolygok" class="container">
+        <h2>A Naprendszer bolygói</h2>
+
+        <div class="row m-4">
+
+            <!-- Merkúr -->
+            <div class="col-md-6">
+                <h3>Merkúr</h3>
+                <img src="img/mercury.png" alt="Merkúr" title="Merkúr" class="img-fluid bolygo">
+                <p>A Merkúr a Naphoz legközelebb eső bolygó, és a legkisebb a Naprendszerben. Felszínén kráterek,
+                    hegységek és völgyek találhatók.</p>
+
+                <p>Nappali hőmérséklete elérheti az 430°C-ot, míg az éjszakai hőmérséklete -180°C-ra is csökkenhet. Ez a
+                    hatalmas hőmérséklet-különbség a bolygó légkörének hiánya miatt alakult ki.</p>
+            </div>
+
+            <!-- Vénusz -->
+            <div class="col-md-6">
+                <h3>Vénusz</h3>
+                <img src="img/venus.png" alt="Vénusz" title="Vénusz" class="img-fluid bolygo">
+                <p>A Vénusz a Naprendszer második bolygója. Vastag, mérgező légköre van, ami rendkívül meleg klímát
+                    okoz. Gyakran nevezik a Föld ikertestvérének.</p>
+
+                <p>Forgási ideje hosszabb, mint a napja; egy teljes forgás 243 földi napig tart, míg egy napja csak 117
+                    földi nap. Ez a bolygó retrográd forgása miatt van, ami azt jelenti, hogy ellentétes irányban forog,
+                    mint a többi bolygó.</p>
+            </div>
+
+            <!-- Föld -->
+            <div class="col-md-6">
+                <h3>Föld</h3>
+                <img src="img/earth.png" alt="Föld" title="Föld" class="img-fluid bolygo">
+                <p>A Föld a harmadik bolygó a Naprendszerben, és az egyetlen, ahol ismert az élet. Felszínén óceánok,
+                    szárazföldek váltják egymást, valamint légkörrel rendelkezik, ami támogatja az életet.</p>
+
+                <p>A Földet különleges kék bolygóként is emlegetik, mivel nagy részét víz borítja. Ez a víz teszi
+                    lehetővé az élet számos formájának létezését, beleértve az emberi civilizációt is.</p>
+            </div>
+
+            <!-- Mars -->
+            <div class="col-md-6">
+                <h3>Mars</h3>
+                <img src="img/mars.png" alt="Mars" title="Mars" class="img-fluid bolygo">
+                <p>A Mars a negyedik bolygó. Vörös színéről ismert, felszínén sivatagok és jégsapkák találhatók.
+                    Jövőbeli emberi expedíciók célpontja.</p>
+
+                <p>Gyakran emlegetik "vörös bolygóként" is, a felszínét borító vas-oxidnak (rozsdának) köszönhetően, ami
+                    vöröses színt kölcsönöz neki. A bolygón lévő nagy vörös hegy, az Olympus Mons a Naprendszer
+                    legnagyobb ismert vulkánja.</p>
+            </div>
+
+            <!-- Jupiter -->
+            <div class="col-md-6">
+                <h3>Jupiter</h3>
+                <img src="img/jupiter.png" alt="Jupiter" title="Jupiter" class="img-fluid bolygo">
+                <p>A Jupiter a legnagyobb bolygó a Naprendszerben. Gázóriás, és számos holdja van. Rendkívül erős
+                    mágneses mezővel rendelkezik, amelynek erőssége több mint tízezerszerese a Föld mágneses mezőjének.
+                    Ez a mágneses mező óriási aurorákat hoz létre a bolygó sarkain.</p>
+                <p class="mb-1"><u> 5 legnagyobb holdja:</u></p>
+                <ol>
+                    <li>Ganymedes</li>
+                    <li>Callisto</li>
+                    <li>Io</li>
+                    <li>Europa</li>
+                    <li>Amalthea</li>
+                </ol>
+            </div>
+
+            <!-- Szaturnusz -->
+            <div class="col-md-6">
+                <h3>Szaturnusz</h3>
+                <img src="img/saturn.png" alt="Szaturnusz" title="Szaturnusz" class="img-fluid bolygo">
+                <p>A Szaturnusz a második legnagyobb bolygó. Jellegzetes gyűrűrendszeréről ismert, és számos holdja van,
+                    beleértve a Titánt. Gyűrűi valószínűleg olyan törmelékekből állnak, amelyek sosem formálódtak meg
+                    bolygóvá, vagy egykor egy hold volt, amely túl közel került a bolygóhoz, és a gravitációs erők
+                    széttépték.</p>
+                <p class="mb-1"><b>Gyűrűrendszere:</b></p>
+                <ul id="gyuruk">
+                    <li>Többrétegű</li>
+                    <li>A rétegeket rések választják el</li>
+                    <li> Nagyrészt vízjégből áll</li>
+                    <li>Mintegy 282 000 km átmérőjű</li>
+                    <li>A holdak gravitációs hatást gyakorolnak a gyűrűkre</li>
+                </ul>
+            </div>
+
+            <!-- Uránusz -->
+            <div class="col-md-6">
+                <h3>Uránusz</h3>
+                <img src="img/uranus.png" alt="Uránusz" title="Uránusz" class="img-fluid bolygo">
+                <p>Az Uránusz egy jeges óriás, és 98 fokos tengelyhajlásával a Naprendszer legkülönösebb bolygója.
+                    Felszíne
+                    alatt metán, víz és ammónia található.</p>
+                <p>A Nap körüli pályáját fekvő helyzetben teszi meg, ami azt jelenti, hogy tengelye majdnem teljesen
+                    vízszintesen helyezkedik el. Ennek eredményeként extrém évszakok váltakoznak, amelyek évtizedekig
+                    tarthatnak.</p>
+            </div>
+            <!-- Neptunusz -->
+            <div class="col-md-6">
+                <h3>Neptunusz</h3>
+                <img src="img/neptune.png" alt="Neptunusz" title="Neptunusz" class="img-fluid bolygo">
+                <p>A Neptunusz a nyolcadik bolygó, és kékes árnyalatával tűnik ki. Jeges óriás, és erős szeleiről
+                    ismert. Több holdja van, köztük a Triton.</p>
+
+                <p>Erőteljes szélviharai között a Nagy Sötét Folt is megtalálható, ami egy hatalmas, Föld méretű vihar,
+                    ami hasonlít a Jupiter Nagy Vörös Foltjára.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bolygók adatai -->
+    <section id="tabla" class="container">
+        <h2>A bolygók adatai</h2>
+        <table class="tablazat m-4 mx-auto table-responsive">
+            <thead>
+                <tr>
+                    <th>Név</th>
+                    <th>Átmérő (km)</th>
+                    <th>Naptól való távolság</th>
+                    <th>Holdak száma</th>
+                    <th>Érdekessége</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Merkúr</td>
+                    <td>4,879</td>
+                    <td>57.91 millió km</td>
+                    <td>0</td>
+                    <td>A legkisebb bolygó</td>
+                </tr>
+                <tr>
+                    <td>Vénusz</td>
+                    <td>12,104</td>
+                    <td>108.2 millió km</td>
+                    <td>0</td>
+                    <td>A legforróbb bolygó</td>
+                </tr>
+                <tr>
+                    <td>Föld</td>
+                    <td>12,742</td>
+                    <td>149.6 millió km</td>
+                    <td>1</td>
+                    <td>Egyedüli ismert élettel</td>
+                </tr>
+                <tr>
+                    <td>Mars</td>
+                    <td>6,779</td>
+                    <td>227.9 millió km</td>
+                    <td>2</td>
+                    <td>Vörös színű</td>
+                </tr>
+                <tr>
+                    <td>Jupiter</td>
+                    <td>139,820</td>
+                    <td>778.5 millió km</td>
+                    <td>79</td>
+                    <td>Legnagyobb bolygó</td>
+                </tr>
+                <tr>
+                    <td>Szaturnusz</td>
+                    <td>116,460</td>
+                    <td>1.43 milliárd km</td>
+                    <td>83</td>
+                    <td>Gyűrűrendszere</td>
+                </tr>
+                <tr>
+                    <td>Uránusz</td>
+                    <td>50,724</td>
+                    <td>2.87 milliárd km</td>
+                    <td>27</td>
+                    <td>98 fokos tengelyhajlás</td>
+                </tr>
+                <tr>
+                    <td>Neptunusz</td>
+                    <td>49,244</td>
+                    <td>4.5 milliárd km</td>
+                    <td>14</td>
+                    <td>Kék szín</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Plútó és egyéb objektumok -->
+    <section id="pluto" class="container">
+        <h2>Plútó és más objektumok</h2>
+
+        <div class="row">
+
+            <div class="col-md-8">
+                <h3>Plútó</h3>
+                <div class="d-flex align-items-center">
+                    <img src="img/pluto.png" alt="Plútó" title="Plútó" class="img-fluid">
+                    <div class="ml-4">
+                        <p>A Plútó egy törpebolygó a Kuiper-övben. 2006-ban sorolták át bolygóról törpebolygóvá. Jégből
+                            és kőzetből áll, és több holdja van, köztük a Charon.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column justify-content-center align-items-end
+             col-md-4">
+
+                <div class="w-75">
+                    <h3>Egyéb objektumok</h3>
+                    <p>A Naprendszerben több kisebb objektum található, köztük törpebolygók, aszteroidák, üstökösök, és
+                        a Kuiper-öv. Az aszteroidák öve a Mars és a Jupiter között található, míg a Kuiper-öv a
+                        Neptunusz után.</p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Lábléc -->
+    <footer class="container">
+        <span class="btn center-btn m-4">
+            <!-- Hivatkozás helye -->
+             <a class="nav-link" href="#leiras">Vissza a tetejére!</a>
+        </span>
+    </footer>
+
+</body>
+
+</html>
+
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+css
+
+body {
+    background: linear-gradient(to right, gray, darkblue, black);
+	font-size: 1.05em;
+    animation: gradientAnimation 6s ease infinite;
+    background-size: 110% 110%;
+    font-family: Georgia;
+    text-decoration: #cccccc;
+}
+
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+#fejlec {
+    height: 33vh;
+    object-fit: cover;
+    width: 100%;
+}
+
+.container h2, .container h3 {
+    margin-top: 60px;
+    margin-bottom: 20PX;
+    text-shadow: black 5px 0px 5px; 
+}
+
+.container h2 {
+    text-decoration: underline;
+}
+
+.container h3 {
+    text-decoration: overline;
+}
+
+#bolygok{
+    padding: 10px;
+}
+
+#bolygok p {
+    margin: 0 30px;
+}
+    
+
+#bolygok ul, ol {
+    margin: 0 60px;
+}
+
+.bolygo {
+    display: block;
+    margin: 30px auto !important;
+    transition: transform 3s;
+}
+
+.bolygo:hover {
+    transform: rotate(45deg);
+}
+
+.tablazat {
+    width: 70%;
+    overflow: hidden;
+    text-align: center;
+    border-radius: 10px;
+    font-size: 110%;
+}
+
+tbody {
+    color: darkblue;
+    text-align: left;
+    text-indent: 50px;
+}
+
+td {
+    padding: 10px;
+}
+
+.tablazat tbody tr:nth-child(odd) {
+    background-color: rgb(179, 205, 224);
+}
+
+.tablazat tbody tr:nth-child(even) {
+    background-color: rgb(100, 151, 177);
+}
+
+.footer {
+    padding: 20px 0;
+    text-align: center;
+}
+
+.center-btn {
+    color: #cccccc;
+    display: block;
+    margin: 30px auto !important;
+    width: 300px;
+    transition: all 0.5s;
+    background-color: rgb(50, 50, 50);
+    font-weight: bold;
+}
+
+.center-btn:hover {
+    box-shadow: 3px 8px 6px rgba(0, 0, 0, 0.3);
+}
+
+.center-btn a {
+    position: relative;
+    transition: 0.5s;
+}
+  
+.center-btn a:after {
+    content: "\21c8";
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    right: -10px;
+    transition: 0.5s;
+}
+  
+.center-btn:hover a {
+    padding-right: 25px;
+}
+
+.center-btn:hover a:after {
+    opacity: 1;
+    right: 0;
+}
+
+a {
+    text-decoration: none;
+    font-variant: small-caps;
+}
+
+#gyuruk{
+    list-style-image: url("../img/saturn_icon.png");
+}
+
+p{
+ text-align: justify;   
+}
+
+
+-------------------------------------------------------------------------------------------------------
+

@@ -1,0 +1,13 @@
+npx create-react-app . 
+npm start
+npm i bootstrap
+import bootstrap/dist/css/boostrap.css
+npm i react-router-dom
+RFC - to get the strater
+npm i bootstrap-icons
+div className="row" 
+route2-path/.../:id
+useparams const{id}= use Params()
+fetch+id
+then(()=>{alert("siker")})
+catch(()=>{console.log("nemjo")})
